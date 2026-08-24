@@ -37,8 +37,8 @@ class UserRegisterView(APIView):
 
 class UserDetailView(APIView):
     """
-    GET /api/users/me/?telegram_id=123
-    Foydalanuvchi ma'lumotlarini va manzillarini qaytarish.
+    GET  /api/users/me/?telegram_id=123 — Foydalanuvchi ma'lumotlarini qaytarish
+    PATCH /api/users/me/ — Foydalanuvchi ism/familiyasini yangilash
     """
     def get(self, request):
         telegram_id = request.query_params.get('telegram_id')
@@ -53,6 +53,23 @@ class UserDetailView(APIView):
             return Response({'error': 'Foydalanuvchi topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(UserSerializer(user).data)
+
+    def patch(self, request):
+        telegram_id = request.data.get('telegram_id') or request.query_params.get('telegram_id')
+        if not telegram_id:
+            return Response({'error': 'telegram_id kerak'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(telegram_id=telegram_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Foydalanuvchi topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+
+        full_name = request.data.get('full_name')
+        if full_name:
+            user.full_name = full_name.strip()
+            user.save(update_fields=['full_name'])
+
+        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
 
 
 class AddressListCreateView(APIView):

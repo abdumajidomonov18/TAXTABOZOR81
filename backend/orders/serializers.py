@@ -13,15 +13,20 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    user_full_name = serializers.CharField(source='user.full_name', read_only=True)
+    user_phone_number = serializers.CharField(source='user.phone_number', read_only=True)
+    user_telegram_id = serializers.IntegerField(source='user.telegram_id', read_only=True)
 
     class Meta:
         model = Order
         fields = [
             'id', 'status', 'status_display', 'payment_method',
+            'user_full_name', 'user_phone_number', 'user_telegram_id',
             'address_text', 'latitude', 'longitude',
             'total_price', 'comment', 'items', 'created_at'
         ]
         read_only_fields = ['id', 'status', 'total_price', 'created_at']
+
 
 
 class OrderCreateSerializer(serializers.Serializer):
