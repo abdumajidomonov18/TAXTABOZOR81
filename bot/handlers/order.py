@@ -205,12 +205,13 @@ async def process_address_as_text(message: types.Message, state: FSMContext):
     telegram_id = message.from_user.id
     new_addr = await user_api.add_address(
         telegram_id=telegram_id,
-        title="Manzil",
+        title=text[:50],
         address_text=text,
         latitude=0.0,
         longitude=0.0,
         is_default=True
     )
+
 
     if isinstance(new_addr, dict) and not new_addr.get("_error"):
         addr_id = new_addr.get("id")
