@@ -52,13 +52,20 @@ class Address(models.Model):
     latitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
+        default=0,
+        blank=True,
+        null=True,
         verbose_name="Kenglik (lat)"
     )
     longitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
+        default=0,
+        blank=True,
+        null=True,
         verbose_name="Uzunlik (lon)"
     )
+
     is_default = models.BooleanField(
         default=False,
         verbose_name="Asosiy manzil"

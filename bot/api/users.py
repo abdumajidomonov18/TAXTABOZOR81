@@ -36,19 +36,20 @@ class UserAPI:
         telegram_id: int,
         title: str,
         address_text: str,
-        latitude: float,
-        longitude: float,
+        latitude: float = 0.0,
+        longitude: float = 0.0,
         is_default: bool = False,
     ) -> dict[str, Any]:
         """Yangi yetkazib berish manzilini qo'shish."""
         payload = {
             "title": title,
             "address_text": address_text,
-            "latitude": round(latitude, 6),
-            "longitude": round(longitude, 6),
+            "latitude": round(latitude, 6) if latitude else 0,
+            "longitude": round(longitude, 6) if longitude else 0,
             "is_default": is_default,
         }
         return await api_client.post("users/addresses/", json=payload, params={"telegram_id": telegram_id})
+
 
     @staticmethod
     async def delete_address(address_id: int) -> dict[str, Any]:

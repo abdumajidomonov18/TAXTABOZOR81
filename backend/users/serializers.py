@@ -3,10 +3,14 @@ from .models import User, Address
 
 
 class AddressSerializer(serializers.ModelSerializer):
+    latitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, default=0, allow_null=True)
+    longitude = serializers.DecimalField(max_digits=9, decimal_places=6, required=False, default=0, allow_null=True)
+
     class Meta:
         model = Address
         fields = ['id', 'title', 'address_text', 'latitude', 'longitude', 'is_default', 'created_at']
         read_only_fields = ['id', 'created_at']
+
 
 
 class UserSerializer(serializers.ModelSerializer):

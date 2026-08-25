@@ -48,10 +48,12 @@ def build_group_order_notification(order_data: dict) -> str:
 
     lat = order_data.get("latitude")
     lon = order_data.get("longitude")
-    if lat and lon:
-        maps_link = f"https://www.google.com/maps?q={lat},{lon}"
+    addr_text = order_data.get("address_text", "Manzil ko'rsatilmagan")
+
+    if lat and lon and float(lat) != 0 and float(lon) != 0:
+        address_display = f"{addr_text}\nhttps://www.google.com/maps?q={lat},{lon}"
     else:
-        maps_link = order_data.get("address_text", "Manzil ko'rsatilmagan")
+        address_display = addr_text
 
     items = order_data.get("items", [])
     items_text_list = []
@@ -81,7 +83,7 @@ def build_group_order_notification(order_data: dict) -> str:
         f"├ <b>Telefon:</b> {clean_phone}\n"
         f"└ <b>User ID:</b> {telegram_id}\n\n"
         "📍 <b>YETKAZISH MANZILI:</b>\n"
-        f"{maps_link}\n\n"
+        f"{address_display}\n\n"
         "🛒 <b>BUYURTMA TARKIBI:</b>\n\n"
         f"{items_block}\n\n"
         "            ==============================\n"
@@ -151,24 +153,24 @@ async def process_order_name(message: types.Message, state: FSMContext):
     await user_api.update_user_name(telegram_id, full_name)
     await state.update_data(user_full_name=full_name)
 
-    # 2-bosqich: Manzilni tanlash
+    # 2-bosqich: Manzilni tanlash yoki kiritish
     addresses = await user_api.get_addresses(telegram_id)
     if isinstance(addresses, list) and len(addresses) > 0:
         await state.set_state(OrderStates.selecting_address)
         await message.answer(
             f"Rahmat, <b>{full_name}</b>!\n\n"
             "📍 <b>2-qadam: Yetkazib berish manzilini tanlang</b>\n\n"
-            "Mavjud manzillaringizdan birini tanlang yoki yangi geolokatsiya yuboring:",
+            "Mavjud manzillaringizdan birini tanlang yoki yangi manzil matnini yozing:",
             reply_markup=get_addresses_selection_keyboard(addresses),
             parse_mode="HTML"
         )
     else:
-        # Hech qanday manzil yo'q bo'lsa — yangi lokatsiya so'rash
+        # Hech qanday manzil yo'q bo'lsa — matn yoki GPS orqali so'rash
         await state.set_state(AddressStates.waiting_for_location)
         await message.answer(
             f"Rahmat, <b>{full_name}</b>!\n\n"
             "📍 <b>2-qadam: Yetkazib berish manzili</b>\n\n"
-            "Iltimos, yetkazib berish manzilini geolokatsiya orqali yuboring:",
+            "Yetkazib berish manzilini matn ko'rinishida yozing (masalan: <i>Chilonzor 9-mavze, 12-uy</i>) yoki pastdagi tugma orqali GPS geolokatsiyangizni yuboring:",
             reply_markup=get_location_keyboard(),
             parse_mode="HTML"
         )
@@ -176,13 +178,55 @@ async def process_order_name(message: types.Message, state: FSMContext):
 
 @router.callback_query(F.data == "add_new_addr")
 async def ask_new_address_location(callback: types.CallbackQuery, state: FSMContext):
-    """Yangi manzil kiritish uchun lokatsiya so'rash."""
+    """Yangi manzil kiritish uchun so'rov."""
     await state.set_state(AddressStates.waiting_for_location)
     await callback.message.answer(
-        "📍 Yetkazib berish manzilini geolokatsiya (GPS) orqali yuboring:",
-        reply_markup=get_location_keyboard()
+        "📍 <b>Yangi yetkazib berish manzili</b>\n\n"
+        "Manzilni yozing (masalan: <i>Yunusobod 4-mavze, 15-uy</i>) yoki pastdagi tugma orqali GPS lokatsiyangizni yuboring:",
+        reply_markup=get_location_keyboard(),
+        parse_mode="HTML"
     )
     await callback.answer()
+
+
+@router.message(AddressStates.waiting_for_location, F.text)
+async def process_address_as_text(message: types.Message, state: FSMContext):
+    """Foydalanuvchi manzilni matn sifatida yozib yuborganda."""
+    text = message.text.strip()
+    if text == "🔙 Bekor qilish":
+        await state.clear()
+        await message.answer("Buyurtma jarayoni bekor qilindi.", reply_markup=get_main_menu_keyboard())
+        return
+
+    if len(text) < 3:
+        await message.answer("⚠️ Iltimos, aniqroq manzil kiriting (kamida 3 ta belgi):")
+        return
+
+    telegram_id = message.from_user.id
+    new_addr = await user_api.add_address(
+        telegram_id=telegram_id,
+        title="Manzil",
+        address_text=text,
+        latitude=0.0,
+        longitude=0.0,
+        is_default=True
+    )
+
+    if isinstance(new_addr, dict) and not new_addr.get("_error"):
+        addr_id = new_addr.get("id")
+        await state.update_data(
+            address_id=addr_id,
+            address_text=text
+        )
+        # To'lov turiga o'tish
+        await state.set_state(OrderStates.selecting_payment)
+        await message.answer(
+            f"📍 Manzil: <b>{text}</b>\n\n💳 <b>3-qadam: To'lov usulini tanlang:</b>",
+            reply_markup=get_payment_methods_keyboard(),
+            parse_mode="HTML"
+        )
+    else:
+        await message.answer("⚠️ Manzilni saqlashda xatolik yuz berdi. Qaytadan urinib ko'ring.")
 
 
 @router.message(AddressStates.waiting_for_location, F.location)
@@ -191,10 +235,10 @@ async def process_location_for_address(message: types.Message, state: FSMContext
     loc = message.location
     telegram_id = message.from_user.id
 
-    address_text = f"GPS: {loc.latitude:.6f}, {loc.longitude:.6f}"
+    address_text = f"Xarita lokatsiyasi ({loc.latitude:.4f}, {loc.longitude:.4f})"
     new_addr = await user_api.add_address(
         telegram_id=telegram_id,
-        title="Manzil",
+        title="Geomanzil",
         address_text=address_text,
         latitude=loc.latitude,
         longitude=loc.longitude,
@@ -205,12 +249,12 @@ async def process_location_for_address(message: types.Message, state: FSMContext
         addr_id = new_addr.get("id")
         await state.update_data(
             address_id=addr_id,
-            address_text=new_addr.get("address_text", address_text)
+            address_text=address_text
         )
         # To'lov turiga o'tish
         await state.set_state(OrderStates.selecting_payment)
         await message.answer(
-            "✅ Manzil qabul qilindi!\n\n💳 <b>3-qadam: To'lov usulini tanlang:</b>",
+            f"📍 Manzil: <b>{address_text}</b>\n\n💳 <b>3-qadam: To'lov usulini tanlang:</b>",
             reply_markup=get_payment_methods_keyboard(),
             parse_mode="HTML"
         )
@@ -229,7 +273,7 @@ async def process_selected_address(callback: types.CallbackQuery, state: FSMCont
     if isinstance(addresses, list):
         for a in addresses:
             if a.get("id") == addr_id:
-                addr_text = f"{a.get('title')} — {a.get('address_text')}"
+                addr_text = a.get('address_text') or a.get('title')
                 break
 
     await state.update_data(address_id=addr_id, address_text=addr_text)

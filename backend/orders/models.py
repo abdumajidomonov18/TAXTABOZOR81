@@ -54,12 +54,15 @@ class Order(models.Model):
     address_text = models.CharField(max_length=500, verbose_name="Manzil matni (snapshot)")
     latitude = models.DecimalField(
         max_digits=9, decimal_places=6,
+        default=0, blank=True, null=True,
         verbose_name="Kenglik (snapshot)"
     )
     longitude = models.DecimalField(
         max_digits=9, decimal_places=6,
+        default=0, blank=True, null=True,
         verbose_name="Uzunlik (snapshot)"
     )
+
 
     total_price = models.DecimalField(
         max_digits=12,

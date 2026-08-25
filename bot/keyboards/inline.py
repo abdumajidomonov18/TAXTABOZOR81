@@ -119,13 +119,19 @@ def get_addresses_selection_keyboard(addresses: list[dict[str, Any]]) -> InlineK
     for addr in addresses:
         title = addr.get("title") or "Manzil"
         addr_text = addr.get("address_text", "")
-        display = f"📍 {title} ({addr_text[:20]}...)" if len(addr_text) > 20 else f"📍 {title} ({addr_text})"
-        builder.button(text=display, callback_data=f"sel_addr:{addr['id']}")
+        # Agar manzil matni "GPS: ..." bo'lsa, chiroyli qilib chiqaramiz
+        if addr_text.startswith("GPS:"):
+            display_text = title if title != "Manzil" else "📍 Xaritadagi manzil"
+        else:
+            display_text = f"📍 {addr_text[:28]}..." if len(addr_text) > 28 else f"📍 {addr_text}"
+
+        builder.button(text=display_text, callback_data=f"sel_addr:{addr['id']}")
 
     builder.adjust(1)
-    builder.row(InlineKeyboardButton(text="➕ Yangi manzil (GPS)", callback_data="add_new_addr"))
+    builder.row(InlineKeyboardButton(text="➕ Yangi manzil kiritish", callback_data="add_new_addr"))
     builder.row(InlineKeyboardButton(text="🔙 Bekor qilish", callback_data="cancel_order"))
     return builder.as_markup()
+
 
 
 def get_payment_methods_keyboard() -> InlineKeyboardMarkup:
