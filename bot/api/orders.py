@@ -31,5 +31,11 @@ class OrderAPI:
         """Bitta buyurtmaning batafsil ma'lumotlarini olish."""
         return await api_client.get(f"orders/{order_id}/")
 
+    @staticmethod
+    async def update_order_status(order_id: int, status_val: str) -> dict[str, Any]:
+        """Buyurtma holatini yangilash (admin/xodimlar tomonidan)."""
+        return await api_client.patch(f"orders/{order_id}/status/", json={"status": status_val})
+
 
 order_api = OrderAPI()
+

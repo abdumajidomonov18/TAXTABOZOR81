@@ -173,3 +173,37 @@ def get_orders_list_keyboard(orders: list[dict[str, Any]]) -> InlineKeyboardMark
         )
     builder.adjust(1)
     return builder.as_markup()
+
+
+def get_admin_order_keyboard(
+    order_id: int,
+    user_telegram_id: int = 0,
+    user_full_name: str = "",
+    current_status: str = "new"
+) -> InlineKeyboardMarkup:
+    """Guruhdagi va adminlar uchun buyurtma holatini boshqarish inline tugmalari."""
+    builder = InlineKeyboardBuilder()
+
+    if current_status == "new":
+        builder.button(text="✅ Qabul qilish", callback_data=f"adm_ord:confirmed:{order_id}")
+        builder.button(text="❌ Bekor qilish", callback_data=f"adm_ord:cancelled:{order_id}")
+        builder.adjust(2)
+    elif current_status == "confirmed":
+        builder.button(text="🚚 Yetkazilmoqda", callback_data=f"adm_ord:delivering:{order_id}")
+        builder.button(text="❌ Bekor qilish", callback_data=f"adm_ord:cancelled:{order_id}")
+        builder.adjust(2)
+    elif current_status == "delivering":
+        builder.button(text="✔️ Yakunlandi", callback_data=f"adm_ord:done:{order_id}")
+        builder.button(text="❌ Bekor qilish", callback_data=f"adm_ord:cancelled:{order_id}")
+        builder.adjust(2)
+
+    # Mijoz profiliga havola tugmasi
+    if user_full_name or user_telegram_id:
+        label = f"👤 Mijoz: {user_full_name}" if user_full_name else f"👤 Mijoz: {user_telegram_id}"
+        if user_telegram_id:
+            builder.row(InlineKeyboardButton(text=label, url=f"tg://user?id={user_telegram_id}"))
+        else:
+            builder.row(InlineKeyboardButton(text=label, callback_data="noop"))
+
+    return builder.as_markup()
+

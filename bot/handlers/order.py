@@ -9,7 +9,9 @@ from bot.keyboards.inline import (
     get_addresses_selection_keyboard,
     get_payment_methods_keyboard,
     get_order_confirm_keyboard,
+    get_admin_order_keyboard,
 )
+
 from bot.keyboards.reply import (
     get_main_menu_keyboard,
     get_location_keyboard,
@@ -30,7 +32,16 @@ PAYMENT_LABELS = {
 }
 
 
-def build_group_order_notification(order_data: dict) -> str:
+STATUS_TEXTS = {
+    "new": "⏳ Kutilmoqda",
+    "confirmed": "✅ Qabul qilindi",
+    "delivering": "🚚 Yetkazilmoqda",
+    "done": "✔️ Yakunlangan",
+    "cancelled": "❌ Bekor qilingan",
+}
+
+
+def build_group_order_notification(order_data: dict, status_actor_text: str = "") -> str:
     """Ishchilar guruhi va adminlar uchun yangi buyurtma bildirishnomasi."""
     order_id = order_data.get("id")
 
@@ -76,6 +87,11 @@ def build_group_order_notification(order_data: dict) -> str:
     payment_method = order_data.get("payment_method", "cash")
     payment_label = PAYMENT_LABELS.get(payment_method, "Naqd pul")
 
+    status_code = order_data.get("status", "new")
+    status_label = STATUS_TEXTS.get(status_code, order_data.get("status_display", "⏳ Kutilmoqda"))
+    if status_actor_text:
+        status_label += f" ({status_actor_text})"
+
     msg = (
         "🆕 <b>YANGI BUYURTMA!</b>\n\n"
         f"📦 <b>Buyurtma:</b> #{order_id}\n"
@@ -91,9 +107,10 @@ def build_group_order_notification(order_data: dict) -> str:
         "            ==============================\n"
         f"💳 <b>JAMI SUMMA:</b> {total_price}\n"
         f"💵 <b>TO'LOV TURI:</b> {payment_label}\n"
-        "📌 <b>STATUS:</b> ⏳ Kutilmoqda"
+        f"📌 <b>STATUS:</b> {status_label}"
     )
     return msg
+
 
 
 @router.callback_query(F.data == "checkout_start")
@@ -428,8 +445,16 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.edit_text(success_text, parse_mode="HTML")
         await callback.message.answer("Asosiy menyu:", reply_markup=get_main_menu_keyboard())
 
-        # Ishchilar guruhi va adminlar uchun xabar matnini tuzish
+        # Ishchilar guruhi va adminlar uchun xabar matni va tugmalarini tuzish
         group_notification_text = build_group_order_notification(result)
+        user_tg_id = result.get("user_telegram_id") or telegram_id
+        user_nm = result.get("user_full_name") or ""
+        admin_kb = get_admin_order_keyboard(
+            order_id=order_id,
+            user_telegram_id=user_tg_id,
+            user_full_name=user_nm,
+            current_status="new"
+        )
 
         # 1. Ishchilar guruhiga yuborish
         if settings.ADMIN_GROUP_CHAT_ID:
@@ -438,6 +463,7 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
                     chat_id=settings.ADMIN_GROUP_CHAT_ID,
                     text=group_notification_text,
                     parse_mode="HTML",
+                    reply_markup=admin_kb,
                     disable_web_page_preview=False
                 )
             except Exception as e:
@@ -450,6 +476,7 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
                     chat_id=admin_id,
                     text=group_notification_text,
                     parse_mode="HTML",
+                    reply_markup=admin_kb,
                     disable_web_page_preview=False
                 )
             except Exception as e:
@@ -459,6 +486,87 @@ async def confirm_order(callback: types.CallbackQuery, state: FSMContext):
         await callback.answer(f"⚠️ Xatolik: {error_msg}", show_alert=True)
 
 
+@router.callback_query(F.data.startswith("adm_ord:"))
+async def handle_admin_order_action(callback: types.CallbackQuery):
+    """Admin yoki ishchilar guruhi orqali buyurtma holatini o'zgartirish."""
+    parts = callback.data.split(":")
+    target_status = parts[1]
+    order_id = int(parts[2])
+
+    worker = callback.from_user
+    worker_name = worker.full_name
+    worker_username = f"@{worker.username}" if worker.username else worker_name
+
+    # 1. Backendda holatni yangilash
+    result = await order_api.update_order_status(order_id, target_status)
+    if not result or result.get("_error"):
+        await callback.answer("⚠️ Holatni yangilashda xatolik yuz berdi.", show_alert=True)
+        return
+
+    # 2. Kim bajarganini aniqlash va mijoz uchun bildirishnoma xabari
+    if target_status == "confirmed":
+        actor_text = f"Qabul qildi: {worker_username}"
+        customer_msg = (
+            f"✅ <b>Buyurtmangiz (#{order_id}) qabul qilindi!</b>\n\n"
+            f"Xodimlarimiz uni yig'ish va tayyorlashni boshladilar."
+        )
+    elif target_status == "delivering":
+        actor_text = f"Yetkazmoqda: {worker_username}"
+        customer_msg = (
+            f"🚚 <b>Buyurtmangiz (#{order_id}) yo'lga chiqdi!</b>\n\n"
+            f"Kuryer tez orada yetkazib berish manziliga yetib boradi."
+        )
+    elif target_status == "done":
+        actor_text = f"Yakunladi: {worker_username}"
+        customer_msg = (
+            f"🎉 <b>Buyurtmangiz (#{order_id}) muvaffaqiyatli yetkazib berildi!</b>\n\n"
+            f"Bizning xizmatimizdan foydalanganingiz uchun tashakkur!"
+        )
+    elif target_status == "cancelled":
+        actor_text = f"Bekor qildi: {worker_username}"
+        customer_msg = (
+            f"❌ <b>Buyurtmangiz (#{order_id}) bekor qilindi.</b>\n\n"
+            f"Agar savollaringiz bo'lsa, operatorimiz bilan bog'lanishingiz mumkin."
+        )
+    else:
+        actor_text = worker_username
+        customer_msg = ""
+
+    # 3. Guruhdagi xabarni yangilash
+    updated_notification = build_group_order_notification(result, status_actor_text=actor_text)
+    user_tg_id = result.get("user_telegram_id") or 0
+    user_nm = result.get("user_full_name") or ""
+    updated_kb = get_admin_order_keyboard(
+        order_id=order_id,
+        user_telegram_id=user_tg_id,
+        user_full_name=user_nm,
+        current_status=target_status
+    )
+
+    try:
+        await callback.message.edit_text(
+            text=updated_notification,
+            parse_mode="HTML",
+            reply_markup=updated_kb,
+            disable_web_page_preview=False
+        )
+    except Exception as e:
+        print(f"Guruhdagi xabarni tahrirlashda xatolik: {e}")
+
+    await callback.answer(f"Buyurtma holati yangilandi: {result.get('status_display', target_status)}")
+
+    # 4. Mijozga xabar yuborish
+    if user_tg_id and customer_msg:
+        try:
+            await callback.bot.send_message(
+                chat_id=user_tg_id,
+                text=customer_msg,
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            print(f"Mijozga bildirishnoma yuborishda xatolik ({user_tg_id}): {e}")
+
+
 @router.callback_query(F.data == "cancel_order")
 async def cancel_order_callback(callback: types.CallbackQuery, state: FSMContext):
     """Buyurtmani bekor qilish."""
@@ -466,3 +574,4 @@ async def cancel_order_callback(callback: types.CallbackQuery, state: FSMContext
     await callback.message.delete()
     await callback.message.answer("Buyurtma jarayoni bekor qilindi.", reply_markup=get_main_menu_keyboard())
     await callback.answer()
+

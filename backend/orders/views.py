@@ -113,3 +113,26 @@ class OrderDetailView(APIView):
             return Response({'error': 'Buyurtma topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(OrderSerializer(order).data)
+
+
+class OrderStatusUpdateView(APIView):
+    """
+    PATCH /api/orders/<id>/status/
+    Buyurtma holatini yangilash (admin/ishchilar uchun).
+    Body: {"status": "confirmed"}
+    """
+    def patch(self, request, pk):
+        try:
+            order = Order.objects.prefetch_related('items__product', 'items__unit').get(pk=pk)
+        except Order.DoesNotExist:
+            return Response({'error': 'Buyurtma topilmadi'}, status=status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get('status')
+        valid_statuses = [choice[0] for choice in Order.STATUS_CHOICES]
+        if new_status not in valid_statuses:
+            return Response({'error': f'Noto\'g\'ri status. Mumkin bo\'lganlar: {valid_statuses}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        order.status = new_status
+        order.save(update_fields=['status', 'updated_at'])
+        return Response(OrderSerializer(order).data)
+
