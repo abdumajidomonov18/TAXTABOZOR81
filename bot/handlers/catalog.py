@@ -190,28 +190,47 @@ async def add_to_cart(callback: types.CallbackQuery):
 
 
 
+MAIN_BUTTONS = [
+    "🌲 Katalog", "🛒 Savatcha", "📦 Buyurtmalarim", "📍 Manzillarim",
+    "🔍 Qidiruv", "📞 Bog'lanish", "🔙 Bekor qilish", "⏩ O'tkazib yuborish",
+    "📱 Telefon raqamni yuborish", "📍 Joriy manzilni (GPS) yuborish"
+]
+
+
 # --- Qidiruv logikasi ---
 @router.message(F.text == "🔍 Qidiruv")
 @router.callback_query(F.data == "search_product")
 async def start_search(event: types.Message | types.CallbackQuery, state: FSMContext):
     """Qidiruvni boshlash."""
     await state.set_state(SearchStates.waiting_for_query)
-    text = "🔍 Qidirmoqchi bo'lgan mahsulot nomini yozing:"
+    text = "🔍 Qidirmoqchi bo'lgan mahsulot nomini yozing (masalan: <i>taxta</i>, <i>sement</i>, <i>armatura</i>):"
 
     if isinstance(event, types.CallbackQuery):
-        await event.message.answer(text, reply_markup=get_cancel_keyboard())
+        await event.message.answer(text, reply_markup=get_cancel_keyboard(), parse_mode="HTML")
         await event.answer()
     else:
-        await event.answer(text, reply_markup=get_cancel_keyboard())
+        await event.answer(text, reply_markup=get_cancel_keyboard(), parse_mode="HTML")
 
 
 @router.message(SearchStates.waiting_for_query, F.text)
+@router.message(F.text, ~F.text.startswith("/"))
 async def process_search(message: types.Message, state: FSMContext):
-    """Qidiruv natijalarini chiqarish."""
+    """Qidiruv natijalarini tezkor chiqarish."""
+    # Agar foydalanuvchi boshqa FSM holatida bo'lsa (masalan buyurtma/ro'yxatdan o'tish), unga xalal bermaymiz
+    current_state = await state.get_state()
+    if current_state and not current_state.startswith("SearchStates"):
+        return
+
     query = message.text.strip()
+    if query in MAIN_BUTTONS:
+        return
+
     if query == "🔙 Bekor qilish":
         await state.clear()
         await message.answer("Bosh menyu", reply_markup=get_main_menu_keyboard())
+        return
+
+    if len(query) < 2:
         return
 
     products = await catalog_api.get_products(search=query)
@@ -219,7 +238,8 @@ async def process_search(message: types.Message, state: FSMContext):
 
     if isinstance(products, dict) and products.get("_error") or not products:
         await message.answer(
-            f"🔍 '<b>{query}</b>' bo'yicha hech qanday mahsulot topilmadi.",
+            f"🔍 '<b>{query}</b>' bo'yicha hech qanday mahsulot topilmadi.\n\n"
+            f"Barcha mahsulotlarni ko'rish uchun <b>🌲 Katalog</b> bo'limidan foydalanishingiz mumkin.",
             parse_mode="HTML",
             reply_markup=get_main_menu_keyboard()
         )
@@ -227,6 +247,8 @@ async def process_search(message: types.Message, state: FSMContext):
 
     # Natijalarni ko'rsatish
     text = f"🔍 '<b>{query}</b>' bo'yicha topilgan mahsulotlar ({len(products)} ta):"
-    reply_markup = get_products_keyboard(products, category_id=products[0].get("category", 0))
+    cat_id = products[0].get("category", 0) if products else 0
+    reply_markup = get_products_keyboard(products, category_id=cat_id)
 
     await message.answer(text, reply_markup=reply_markup, parse_mode="HTML")
+

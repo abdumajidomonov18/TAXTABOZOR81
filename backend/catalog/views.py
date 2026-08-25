@@ -15,12 +15,15 @@ class CategoryListView(APIView):
         return Response(CategorySerializer(categories, many=True).data)
 
 
+from django.db.models import Q
+
+
 class ProductListView(APIView):
     """
     GET /api/products/
     Mahsulotlar ro'yxati. Filtrlar:
     - ?category=<id>       — kategoriya bo'yicha filter
-    - ?search=<text>       — nomi bo'yicha qidirish
+    - ?search=<text>       — nomi, tavsifi va kategoriyasi bo'yicha aqlli qidirish
     - ?min_price=&max_price= — narx oralig'i
     """
     def get(self, request):
@@ -31,10 +34,35 @@ class ProductListView(APIView):
         if category_id:
             queryset = queryset.filter(category_id=category_id)
 
-        # Qidirish
+        # Aqlli va tezkor qidirish
         search = request.query_params.get('search')
         if search:
-            queryset = queryset.filter(name__icontains=search)
+            search = search.strip()
+            words = [w for w in search.split() if len(w) > 0]
+            search_query = Q()
+
+            for word in words:
+                clean_w = word.replace("'", "").replace("`", "").replace("‘", "").replace("’", "").replace("ʻ", "")
+                word_q = (
+                    Q(name__icontains=word) |
+                    Q(description__icontains=word) |
+                    Q(category__name__icontains=word)
+                )
+                if clean_w:
+                    word_q |= (
+                        Q(name__icontains=clean_w) |
+                        Q(description__icontains=clean_w) |
+                        Q(category__name__icontains=clean_w)
+                    )
+                    # "yogoch" -> "yog'och", "yo'g'och", "taxta"
+                    if "o" in clean_w:
+                        word_q |= Q(name__icontains=clean_w.replace("o", "o'")) | Q(category__name__icontains=clean_w.replace("o", "o'"))
+                    if "g" in clean_w:
+                        word_q |= Q(name__icontains=clean_w.replace("g", "g'")) | Q(category__name__icontains=clean_w.replace("g", "g'"))
+
+                search_query &= word_q
+
+            queryset = queryset.filter(search_query).distinct()
 
         # Narx filtri
         min_price = request.query_params.get('min_price')
@@ -45,6 +73,7 @@ class ProductListView(APIView):
             queryset = queryset.filter(price__lte=max_price)
 
         return Response(ProductSerializer(queryset, many=True).data)
+
 
 
 class ProductDetailView(APIView):

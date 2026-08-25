@@ -11,9 +11,10 @@ def setup_routers() -> list[Router]:
     """Barcha handler routerlarini birlashtirish."""
     return [
         start_router,
-        catalog_router,
-        cart_router,
         order_router,
+        cart_router,
         history_router,
         common_router,
+        catalog_router,
     ]
+
