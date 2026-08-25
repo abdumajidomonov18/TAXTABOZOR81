@@ -278,21 +278,27 @@ async def process_address_title(message: types.Message, state: FSMContext):
 
     if isinstance(new_addr, dict) and not new_addr.get("_error"):
         addr_id = new_addr.get("id")
-        full_display = f"{title} — {temp_address_text}" if title != temp_address_text else title
+        if temp_lat and temp_lon and float(temp_lat) != 0 and float(temp_lon) != 0:
+            full_display = f'{title} — <a href="https://www.google.com/maps?q={temp_lat},{temp_lon}">Xaritadagi lokatsiya 📍</a>'
+        else:
+            full_display = f"{title} — {temp_address_text}" if title != temp_address_text else title
+
         await state.update_data(
             address_id=addr_id,
-            address_text=full_display
+            address_text=full_display,
+            latitude=temp_lat,
+            longitude=temp_lon
         )
         # To'lov turiga o'tish
         await state.set_state(OrderStates.selecting_payment)
         await message.answer(
             f"✅ Manzil saqlandi: <b>{full_display}</b>\n\n💳 <b>3-qadam: To'lov usulini tanlang:</b>",
             reply_markup=get_payment_methods_keyboard(),
-            parse_mode="HTML"
+            parse_mode="HTML",
+            disable_web_page_preview=True
         )
     else:
         await message.answer("⚠️ Manzilni saqlashda xatolik yuz berdi. Qaytadan urinib ko'ring.")
-
 
 
 @router.callback_query(OrderStates.selecting_address, F.data.startswith("sel_addr:"))
@@ -303,19 +309,34 @@ async def process_selected_address(callback: types.CallbackQuery, state: FSMCont
 
     addresses = await user_api.get_addresses(telegram_id)
     addr_text = "Tanlangan manzil"
+    lat = 0.0
+    lon = 0.0
     if isinstance(addresses, list):
         for a in addresses:
             if a.get("id") == addr_id:
-                addr_text = a.get('address_text') or a.get('title')
+                title = a.get('title') or "Manzil"
+                raw_text = a.get('address_text', '')
+                lat = a.get('latitude', 0.0)
+                lon = a.get('longitude', 0.0)
+                if lat and lon and float(lat) != 0 and float(lon) != 0:
+                    addr_text = f'{title} — <a href="https://www.google.com/maps?q={lat},{lon}">Xaritadagi lokatsiya 📍</a>'
+                else:
+                    addr_text = f"{title} — {raw_text}" if title != raw_text else title
                 break
 
-    await state.update_data(address_id=addr_id, address_text=addr_text)
+    await state.update_data(
+        address_id=addr_id,
+        address_text=addr_text,
+        latitude=lat,
+        longitude=lon
+    )
     await state.set_state(OrderStates.selecting_payment)
 
     await callback.message.edit_text(
         f"📍 Tanlangan manzil: <b>{addr_text}</b>\n\n💳 <b>3-qadam: To'lov usulini tanlang:</b>",
         reply_markup=get_payment_methods_keyboard(),
-        parse_mode="HTML"
+        parse_mode="HTML",
+        disable_web_page_preview=True
     )
     await callback.answer()
 
@@ -368,8 +389,10 @@ async def process_order_comment(message: types.Message, state: FSMContext):
     await message.answer(
         summary_text,
         reply_markup=get_order_confirm_keyboard(),
-        parse_mode="HTML"
+        parse_mode="HTML",
+        disable_web_page_preview=True
     )
+
 
 
 @router.callback_query(OrderStates.confirming, F.data == "confirm_order_yes")
