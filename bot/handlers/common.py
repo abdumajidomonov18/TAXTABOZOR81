@@ -21,22 +21,26 @@ async def show_my_addresses(message: types.Message, state: FSMContext):
 
     if not addresses:
         await message.answer(
-            "📍 <b>Sizda hali saqlangan manzillar yo'q.</b>\n\nBuyurtma berish paytida manzilingizni yuborishingiz mumkin.",
+            "📍 <b>Sizda hali saqlangan manzillar yo'q.</b>\n\nBuyurtma berish paytida manzilingizni kiritishingiz mumkin.",
             parse_mode="HTML"
         )
         return
 
-    text = "📍 <b>Sizning saqlangan yetkazib berish manzillaringiz:</b>\n"
+    lines = ["📍 <b>Sizning saqlangan yetkazib berish manzillaringiz:</b>\n"]
     builder = InlineKeyboardBuilder()
 
-    for addr in addresses:
-        title = addr.get("title", "Manzil")
+    for idx, addr in enumerate(addresses, 1):
+        title = addr.get("title") or "Manzil"
         addr_text = addr.get("address_text", "")
         addr_id = addr.get("id")
-        builder.button(text=f"❌ O'chirish: {title}", callback_data=f"del_addr:{addr_id}")
+        
+        lines.append(f"{idx}. 🏷 <b>{title}</b>\n   └ <i>{addr_text}</i>")
+        builder.button(text=f"🗑 O'chirish: {title}", callback_data=f"del_addr:{addr_id}")
 
+    lines.append("\n<i>Manzilni o'chirish uchun pastdagi tegishli tugmani bosing:</i>")
     builder.adjust(1)
-    await message.answer(text, reply_markup=builder.as_markup(), parse_mode="HTML")
+    await message.answer("\n".join(lines), reply_markup=builder.as_markup(), parse_mode="HTML")
+
 
 
 @router.callback_query(F.data.startswith("del_addr:"))

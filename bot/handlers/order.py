@@ -191,7 +191,7 @@ async def ask_new_address_location(callback: types.CallbackQuery, state: FSMCont
 
 @router.message(AddressStates.waiting_for_location, F.text)
 async def process_address_as_text(message: types.Message, state: FSMContext):
-    """Foydalanuvchi manzilni matn sifatida yozib yuborganda."""
+    """Foydalanuvchi manzilni matn sifatida yozib yuborganda: Manzil nomini so'raymiz."""
     text = message.text.strip()
     if text == "🔙 Bekor qilish":
         await state.clear()
@@ -202,65 +202,95 @@ async def process_address_as_text(message: types.Message, state: FSMContext):
         await message.answer("⚠️ Iltimos, aniqroq manzil kiriting (kamida 3 ta belgi):")
         return
 
-    telegram_id = message.from_user.id
-    new_addr = await user_api.add_address(
-        telegram_id=telegram_id,
-        title=text[:50],
-        address_text=text,
-        latitude=0.0,
-        longitude=0.0,
-        is_default=True
+    # Tavsiya qilinadigan nom (masalan matnning birinchi so'zi)
+    suggested = text.split(",")[0].split()[0].strip()[:20]
+
+    await state.update_data(
+        temp_address_text=text,
+        temp_latitude=0.0,
+        temp_longitude=0.0,
     )
-
-
-    if isinstance(new_addr, dict) and not new_addr.get("_error"):
-        addr_id = new_addr.get("id")
-        await state.update_data(
-            address_id=addr_id,
-            address_text=text
-        )
-        # To'lov turiga o'tish
-        await state.set_state(OrderStates.selecting_payment)
-        await message.answer(
-            f"📍 Manzil: <b>{text}</b>\n\n💳 <b>3-qadam: To'lov usulini tanlang:</b>",
-            reply_markup=get_payment_methods_keyboard(),
-            parse_mode="HTML"
-        )
-    else:
-        await message.answer("⚠️ Manzilni saqlashda xatolik yuz berdi. Qaytadan urinib ko'ring.")
+    await state.set_state(AddressStates.waiting_for_title)
+    await message.answer(
+        f"📍 Manzil qabul qilindi: <b>{text}</b>\n\n"
+        "🏷 <b>Ushbu manzilga qisqa nom bering:</b>\n"
+        "(Keyingi safar tanlash oson bo'lishi uchun, masalan: <i>Uy</i>, <i>Ishxona</i>, <i>Dalvarzin</i>, <i>Obyekt</i>):",
+        reply_markup=get_address_title_keyboard(suggested_title=suggested),
+        parse_mode="HTML"
+    )
 
 
 @router.message(AddressStates.waiting_for_location, F.location)
 async def process_location_for_address(message: types.Message, state: FSMContext):
-    """Yuborilgan geolokatsiyani qabul qilib saqlash."""
+    """Yuborilgan geolokatsiyani qabul qilib, unga nom so'raymiz."""
     loc = message.location
+    address_text = f"Xarita lokatsiyasi ({loc.latitude:.4f}, {loc.longitude:.4f})"
+
+    await state.update_data(
+        temp_address_text=address_text,
+        temp_latitude=loc.latitude,
+        temp_longitude=loc.longitude,
+    )
+    await state.set_state(AddressStates.waiting_for_title)
+    await message.answer(
+        "📍 Geolokatsiya qabul qilindi!\n\n"
+        "🏷 <b>Ushbu manzilga qisqa nom bering:</b>\n"
+        "(Masalan: <i>Uy</i>, <i>Ishxona</i>, <i>Dalvarzin</i>, <i>Qurilish maydoni</i>):",
+        reply_markup=get_address_title_keyboard(),
+        parse_mode="HTML"
+    )
+
+
+@router.message(AddressStates.waiting_for_title, F.text)
+async def process_address_title(message: types.Message, state: FSMContext):
+    """Manzil nomini saqlash va to'lov turiga o'tish."""
+    text = message.text.strip()
+    if text == "🔙 Bekor qilish":
+        await state.clear()
+        await message.answer("Buyurtma jarayoni bekor qilindi.", reply_markup=get_main_menu_keyboard())
+        return
+
+    title = text
+    for prefix in ["🏠 ", "🏢 ", "🏗 ", "📦 ", "📍 "]:
+        if title.startswith(prefix):
+            title = title[len(prefix):].strip()
+            break
+
+    if len(title) < 2:
+        title = "Manzil"
+
+    data = await state.get_data()
+    temp_address_text = data.get("temp_address_text", title)
+    temp_lat = data.get("temp_latitude", 0.0)
+    temp_lon = data.get("temp_longitude", 0.0)
     telegram_id = message.from_user.id
 
-    address_text = f"Xarita lokatsiyasi ({loc.latitude:.4f}, {loc.longitude:.4f})"
     new_addr = await user_api.add_address(
         telegram_id=telegram_id,
-        title="Geomanzil",
-        address_text=address_text,
-        latitude=loc.latitude,
-        longitude=loc.longitude,
+        title=title,
+        address_text=temp_address_text,
+        latitude=temp_lat,
+        longitude=temp_lon,
         is_default=True
     )
 
     if isinstance(new_addr, dict) and not new_addr.get("_error"):
         addr_id = new_addr.get("id")
+        full_display = f"{title} — {temp_address_text}" if title != temp_address_text else title
         await state.update_data(
             address_id=addr_id,
-            address_text=address_text
+            address_text=full_display
         )
         # To'lov turiga o'tish
         await state.set_state(OrderStates.selecting_payment)
         await message.answer(
-            f"📍 Manzil: <b>{address_text}</b>\n\n💳 <b>3-qadam: To'lov usulini tanlang:</b>",
+            f"✅ Manzil saqlandi: <b>{full_display}</b>\n\n💳 <b>3-qadam: To'lov usulini tanlang:</b>",
             reply_markup=get_payment_methods_keyboard(),
             parse_mode="HTML"
         )
     else:
         await message.answer("⚠️ Manzilni saqlashda xatolik yuz berdi. Qaytadan urinib ko'ring.")
+
 
 
 @router.callback_query(OrderStates.selecting_address, F.data.startswith("sel_addr:"))

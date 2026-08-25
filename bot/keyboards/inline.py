@@ -120,10 +120,13 @@ def get_addresses_selection_keyboard(addresses: list[dict[str, Any]]) -> InlineK
         title = addr.get("title") or "Manzil"
         addr_text = addr.get("address_text", "")
 
-        if addr_text and not addr_text.startswith("GPS:") and not addr_text.startswith("Xarita lokatsiyasi"):
+        if title and title not in ("Manzil", "Geomanzil"):
+            if addr_text and addr_text != title and not addr_text.startswith("GPS:") and not addr_text.startswith("Xarita"):
+                display_text = f"📍 {title} ({addr_text[:18]}...)" if len(addr_text) > 18 else f"📍 {title} ({addr_text})"
+            else:
+                display_text = f"📍 {title}"
+        elif addr_text and not addr_text.startswith("GPS:") and not addr_text.startswith("Xarita"):
             display_text = f"📍 {addr_text[:28]}..." if len(addr_text) > 28 else f"📍 {addr_text}"
-        elif title and title not in ("Manzil", "Geomanzil"):
-            display_text = f"📍 {title[:28]}..." if len(title) > 28 else f"📍 {title}"
         else:
             display_text = "📍 Xaritadagi geolokatsiya"
 
@@ -133,6 +136,7 @@ def get_addresses_selection_keyboard(addresses: list[dict[str, Any]]) -> InlineK
     builder.row(InlineKeyboardButton(text="➕ Yangi manzil kiritish", callback_data="add_new_addr"))
     builder.row(InlineKeyboardButton(text="🔙 Bekor qilish", callback_data="cancel_order"))
     return builder.as_markup()
+
 
 
 

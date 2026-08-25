@@ -53,3 +53,16 @@ def get_name_input_keyboard(current_name: str = "") -> ReplyKeyboardMarkup:
     keyboard.append([KeyboardButton(text="🔙 Bekor qilish")])
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 
+
+def get_address_title_keyboard(suggested_title: str = "") -> ReplyKeyboardMarkup:
+    """Manzilga nom berish uchun tezkor klaviatura."""
+    keyboard = [
+        [KeyboardButton(text="🏠 Uy"), KeyboardButton(text="🏢 Ishxona")],
+        [KeyboardButton(text="🏗 Qurilish obyekti"), KeyboardButton(text="📦 Do'kon")]
+    ]
+    if suggested_title and suggested_title not in ("Uy", "Ishxona", "Qurilish obyekti", "Do'kon"):
+        keyboard.insert(0, [KeyboardButton(text=f"📍 {suggested_title}")])
+    keyboard.append([KeyboardButton(text="🔙 Bekor qilish")])
+    return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
+
+
