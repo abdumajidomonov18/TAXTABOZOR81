@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="uz" class="light">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>TAXTABOZOR81 - Qurilish Mollari WebApp</title>
+  
+  <!-- Tailwind CSS & Plugins -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  
+  <!-- Material Symbols Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Leaflet CSS & JS for OpenStreetMap -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Tailwind Theme Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#835500",
+            "primary-container": "#F5A623",
+            "primary-dark": "#D98200",
+            "on-primary": "#FFFFFF",
+            "on-primary-container": "#4A2B00",
+            "secondary": "#555F6F",
+            "secondary-container": "#D6E0F3",
+            "on-secondary-container": "#3E4856",
+            "background": "#F9F9F9",
+            "on-background": "#1A1C1C",
+            "surface": "#F9F9F9",
+            "surface-container-lowest": "#FFFFFF",
+            "surface-container-low": "#F3F3F3",
+            "surface-container": "#EEEEEE",
+            "surface-container-high": "#E8E8E8",
+            "surface-container-highest": "#E2E2E2",
+            "on-surface": "#1A1C1C",
+            "on-surface-variant": "#524534",
+            "outline": "#857462",
+            "outline-light": "#E5E7EB",
+            "outline-variant": "#D7C3AE",
+            "success": "#10B981",
+            "error": "#BA1A1A"
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0px 4px 16px rgba(31, 41, 55, 0.06)',
+            'card-hover': '0px 8px 24px rgba(31, 41, 55, 0.12)',
+            'floating': '0px -2px 14px rgba(31, 41, 55, 0.08)',
+            'subtle': '0px 2px 8px rgba(0, 0, 0, 0.04)'
+          },
+          borderRadius: {
+            'xl': '16px',
+            '2xl': '20px',
+            '3xl': '24px'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
+    }
+    /* Hide scrollbars */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      user-select: none;
+    }
+    .icon-fill {
+      font-variation-settings: 'FILL' 1 !important;
+    }
+    /* Toast animation */
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-toast {
+      animation: slideDown 0.3s ease-out forwards;
+    }
+    /* Ripple touch effect */
+    .btn-press:active {
+      transform: scale(0.96);
+      transition: transform 0.1s ease;
+    }
+    /* Leaflet customization & smooth bottom sheet animation */
+    #osm-map {
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+    }
+    .leaflet-control-attribution {
+      font-size: 8px !important;
+      background: rgba(255,255,255,0.7) !important;
+      padding: 0 4px !important;
+    }
+    .center-pin-marker {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -100%);
+      z-index: 25;
+      pointer-events: none;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pin-dragging {
+      transform: translate(-50%, -130%) scale(1.15) !important;
+    }
+    #address-bottom-sheet {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out;
+      will-change: transform, opacity;
+    }
+    #address-bottom-sheet.sheet-hidden {
+      transform: translateY(115%);
+      opacity: 0;
+      pointer-events: none;
+    }
+    #btn-map-locate {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    }
+    #btn-map-locate.btn-locate-low {
+      transform: translateY(80px);
+      opacity: 0.7;
+    }
+  </style>
+</head>
+
+<body class="text-on-background antialiased min-h-screen flex justify-center selection:bg-primary-container selection:text-white">
+
+  <!-- Mobile Container / Telegram WebApp Canvas -->
+  <div class="w-full max-w-[420px] min-h-screen bg-background relative flex flex-col shadow-2xl overflow-x-hidden">
+
+    <!-- Toast Notification Banner -->
+    <div id="toast-banner" class="hidden fixed top-3 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-[380px] bg-on-background text-white px-4 py-3 rounded-2xl shadow-xl flex items-center justify-between gap-3 animate-toast">
+      <div class="flex items-center gap-2.5 text-sm font-medium">
+        <span id="toast-icon" class="material-symbols-outlined text-primary-container">check_circle</span>
+        <span id="toast-message">Amal muvaffaqiyatli bajarildi</span>
+      </div>
+      <button onclick="hideToast()" class="text-gray-400 hover:text-white">
+        <span class="material-symbols-outlined text-[18px]">close</span>
+      </button>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 1: BOSH SAHIFA (HOME)                                  -->
+    <!-- ============================================================== -->
+    <section id="screen-home" class="screen-view flex-1 flex flex-col pb-24">
+      <!-- Top App Bar -->
+      <header class="sticky top-0 z-40 flex justify-between items-center px-4 h-14 w-full bg-background/95 backdrop-blur-md">
+        <div class="flex items-center gap-2.5 cursor-pointer" onclick="navigate('profile')">
+          <img class="w-9 h-9 rounded-full object-cover border-2 border-primary-container shadow-sm" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" alt="Avatar"/>
+          <span class="text-xl font-bold text-on-background tracking-tight">TAXTABOZOR81</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="navigate('favorites')" class="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:text-primary-container hover:bg-surface-container-low transition-colors">
+            <span class="material-symbols-outlined">favorite</span>
+          </button>
+          <button onclick="showToast('Sizda yangi bildirishnomalar yo\'q', 'notifications')" class="w-9 h-9 rounded-full flex items-center justify-center text-primary-container hover:bg-surface-container-low transition-colors relative">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+          </button>
+        </div>
+      </header>
+
+      <main class="w-full flex flex-col px-4 gap-5 pt-1">
+        <!-- Search & Filter Bar -->
+        <div class="sticky top-14 z-30 bg-background/95 backdrop-blur-sm py-1.5">
+          <div class="relative w-full h-12 bg-surface-container-lowest rounded-xl shadow-card border border-outline-light flex items-center px-3.5 focus-within:border-primary-container focus-within:ring-2 focus-within:ring-primary-container/20 transition-all">
+            <span class="material-symbols-outlined text-secondary mr-2">search</span>
+            <input id="search-input" oninput="handleSearch(this.value)" class="flex-1 bg-transparent border-none outline-none text-sm text-on-surface placeholder:text-gray-400 h-full p-0 focus:ring-0" placeholder="Mahsulotlarni qidirish..." type="text"/>
+            <div class="h-5 w-[1px] bg-gray-200 mx-2"></div>
+            <button onclick="toggleFilterModal()" class="text-primary-container flex items-center justify-center p-1 rounded-lg hover:bg-amber-50 active:scale-95 transition-all">
+              <span class="material-symbols-outlined">tune</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Promo Banner Carousel -->
+        <section class="w-full h-44 rounded-2xl overflow-hidden relative shadow-card group cursor-pointer" onclick="filterByCategory('Yog\'och')">
+          <div class="w-full h-full bg-cover bg-center absolute inset-0 transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&auto=format&fit=crop&q=80');"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent flex flex-col justify-center p-5 text-white">
+            <span class="bg-primary-container/90 text-on-primary-container text-[11px] font-bold px-2 py-0.5 rounded-full w-max mb-1.5">Aksiya</span>
+            <h2 class="text-xl font-bold leading-tight mb-1">Yog'ochga 10% chegirma</h2>
+            <p class="text-xs text-gray-200 mb-3 font-normal">Faqat bugun buyurtma bering!</p>
+            <button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:bg-amber-400 btn-press w-max flex items-center gap-1">
+              <span>Xarid qilish</span>
+              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Category Horizontal Chips -->
+        <section class="w-full overflow-x-auto no-scrollbar -mx-4 px-4">
+          <div id="category-chips" class="flex gap-2 pb-1 w-max">
+            <!-- Chips rendered via JS -->
+          </div>
+        </section>
+
+        <!-- Featured Products (Tavsiya etiladi) -->
+        <section class="w-full">
+          <div class="flex justify-between items-center mb-2.5">
+            <h3 class="text-lg font-bold text-on-background">Tavsiya etiladi</h3>
+            <button onclick="filterByCategory('all')" class="text-xs font-semibold text-primary-container hover:underline flex items-center">
+              Barchasi &gt;
+            </button>
+          </div>
+          <!-- Smooth Horizontal Scroll without empty gap -->
+          <div class="w-full overflow-x-auto no-scrollbar -mx-4 px-4">
+            <div id="featured-products-container" class="flex gap-3 pb-2 w-max pr-4">
+              <!-- Featured products rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- All Products (Barcha mahsulotlar - 2-Column Grid) -->
+        <section class="w-full">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-bold text-on-background">Barcha mahsulotlar</h3>
+            <span id="product-count-badge" class="text-xs text-secondary font-medium">8 ta mahsulot</span>
+          </div>
+          <div id="all-products-grid" class="grid grid-cols-2 gap-3">
+            <!-- All products rendered via JS -->
+          </div>
+        </section>
+      </main>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 2: MAHSULOT TAFSILOTLARI (PRODUCT DETAIL)              -->
+    <!-- ============================================================== -->
+    <section id="screen-product-detail" class="screen-view hidden flex-1 flex flex-col pb-28">
+      <!-- Top App Bar -->
+      <header class="sticky top-0 z-40 flex justify-between items-center px-4 h-14 w-full bg-background/90 backdrop-blur-md">
+        <button onclick="navigateBack()" class="p-2 -ml-2 rounded-full text-on-background hover:bg-surface-container-low btn-press">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <span class="text-base font-bold text-on-background">Mahsulot ma'lumoti</span>
+        <button onclick="toggleCurrentProductFavorite()" class="p-2 -mr-2 rounded-full text-secondary hover:text-red-500 btn-press">
+          <span id="detail-fav-icon" class="material-symbols-outlined">favorite</span>
+        </button>
+      </header>
+
+      <main class="flex-1 flex flex-col">
+        <!-- Hero Product Image -->
+        <div class="relative w-full aspect-square bg-gray-100 rounded-b-3xl overflow-hidden shadow-card">
+          <img id="detail-image" class="w-full h-full object-cover" src="" alt="Mahsulot rasmi"/>
+          <div id="detail-category" class="absolute bottom-4 left-4 bg-primary-container text-on-primary-container px-3.5 py-1 rounded-full text-xs font-semibold shadow-sm">
+            Qurilish mollari
+          </div>
+        </div>
+
+        <!-- Product Details Content -->
+        <div class="px-4 pt-5 pb-4 flex flex-col gap-4">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <h1 id="detail-title" class="text-xl font-bold text-on-background leading-tight">Mahsulot nomi</h1>
+              <span id="detail-badge" class="bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap">Omborda bor</span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="detail-price" class="text-2xl font-bold text-primary-container">0 so'm</span>
+              <span id="detail-unit" class="text-sm text-secondary font-medium">/ dona</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="flex flex-col gap-1.5">
+            <h2 class="text-base font-bold text-on-background">Tavsif</h2>
+            <p id="detail-description" class="text-sm text-gray-600 leading-relaxed">
+              Yuqori sifatli mahsulot. Barcha qurilish me'yorlariga javob beradi.
+            </p>
+          </div>
+
+          <!-- Specifications Table -->
+          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-card border border-outline-light flex flex-col gap-2.5">
+            <div class="flex justify-between items-center text-sm py-1 border-b border-gray-100">
+              <span class="text-secondary font-normal">Og'irligi / Hajmi</span>
+              <span id="detail-spec-weight" class="font-semibold text-on-background">50 kg</span>
+            </div>
+            <div class="flex justify-between items-center text-sm py-1 border-b border-gray-100">
+              <span class="text-secondary font-normal">Markasi</span>
+              <span id="detail-spec-brand" class="font-semibold text-on-background">M-400</span>
+            </div>
+            <div class="flex justify-between items-center text-sm py-1">
+              <span class="text-secondary font-normal">Ishlab chiqaruvchi</span>
+              <span id="detail-spec-origin" class="font-semibold text-on-background">Qizilqumsement</span>
+            </div>
+          </div>
+
+          <!-- Quantity Stepper Section -->
+          <div class="flex flex-col gap-2 pt-1">
+            <h2 class="text-base font-bold text-on-background">Miqdor</h2>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center bg-surface-container-lowest rounded-2xl border border-outline-light shadow-subtle overflow-hidden">
+                <button onclick="changeDetailQuantity(-1)" class="w-12 h-12 flex items-center justify-center text-primary-container hover:bg-amber-50 active:bg-amber-100 btn-press">
+                  <span class="material-symbols-outlined text-[20px]">remove</span>
+                </button>
+                <input id="detail-qty-input" type="number" min="1" value="1" readonly class="w-14 h-12 text-center font-bold text-base border-0 bg-transparent text-on-background focus:ring-0 p-0"/>
+                <button onclick="changeDetailQuantity(1)" class="w-12 h-12 flex items-center justify-center text-primary-container hover:bg-amber-50 active:bg-amber-100 btn-press">
+                  <span class="material-symbols-outlined text-[20px]">add</span>
+                </button>
+              </div>
+              <span id="detail-qty-unit-label" class="text-sm font-medium text-secondary">dona</span>
+            </div>
+            <p class="text-[11px] text-gray-500 italic mt-0.5">* Katta hajmdagi buyurtmalar uchun yetkazib berish xizmati chegirma bilan taqdim etiladi.</p>
+          </div>
+        </div>
+      </main>
+
+      <!-- Sticky Bottom Action Bar -->
+      <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] z-50 bg-surface-container-lowest shadow-floating rounded-t-2xl px-4 py-3 flex items-center justify-between gap-3 border-t border-outline-light">
+        <div class="flex flex-col">
+          <span class="text-[11px] text-secondary font-medium">Jami summa:</span>
+          <span id="detail-total-calc" class="text-lg font-extrabold text-on-background">52 000 so'm</span>
+        </div>
+        <button onclick="addDetailProductToCart()" class="flex-1 bg-primary-container text-on-primary-container font-bold text-sm h-12 rounded-xl shadow-md hover:bg-amber-400 btn-press flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+          <span>Savatga qo'shish</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 3: SAVAT (CART)                                        -->
+    <!-- ============================================================== -->
+    <section id="screen-cart" class="screen-view hidden flex-1 flex flex-col pb-36">
+      <!-- Top App Bar -->
+      <header class="sticky top-0 z-40 flex justify-between items-center px-4 h-14 w-full bg-background/95 backdrop-blur-md">
+        <div class="flex items-center gap-2.5 cursor-pointer" onclick="navigate('home')">
+          <img class="w-8 h-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" alt="Avatar"/>
+          <span class="text-xl font-bold text-on-background tracking-tight">TAXTABOZOR81</span>
+        </div>
+        <button onclick="showToast('Sizda yangi bildirishnomalar yo\'q', 'notifications')" class="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+      </header>
+
+      <main class="w-full flex flex-col px-4 gap-4 pt-1">
+        <div class="flex justify-between items-center">
+          <h1 class="text-2xl font-extrabold text-on-background">Savatcha</h1>
+          <button onclick="clearCart()" class="text-xs text-red-500 hover:underline font-medium flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">delete</span>
+            <span>Tozalash</span>
+          </button>
+        </div>
+
+        <!-- Cart Items List Container -->
+        <div id="cart-items-list" class="flex flex-col gap-3">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Empty Cart State -->
+        <div id="cart-empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center gap-3">
+          <div class="w-20 h-20 bg-amber-100 text-primary-container rounded-full flex items-center justify-center shadow-inner">
+            <span class="material-symbols-outlined text-4xl">shopping_cart</span>
+          </div>
+          <h3 class="text-lg font-bold text-on-background">Savatchangiz bo'sh</h3>
+          <p class="text-xs text-gray-500 max-w-[240px]">Qurilish mollarini qidirib, savatchangizga qo'shing</p>
+          <button onclick="navigate('home')" class="mt-2 bg-primary-container text-on-primary-container px-6 py-2.5 rounded-xl text-xs font-bold shadow-md hover:bg-amber-400 btn-press">
+            Mahsulotlarni ko'rish
+          </button>
+        </div>
+      </main>
+
+      <!-- Sticky Bottom Checkout Summary -->
+      <div id="cart-summary-footer" class="fixed bottom-16 left-1/2 -translate-x-1/2 w-full max-w-[420px] z-40 bg-surface-container-lowest shadow-floating rounded-t-3xl p-4 border-t border-outline-light flex flex-col gap-3">
+        <div class="flex justify-between items-center text-xs text-secondary font-medium">
+          <span>Jami mahsulotlar:</span>
+          <span id="cart-total-count-label" class="font-bold text-on-background">3 xil (1012 ta)</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-base font-extrabold text-on-background">Umumiy summa:</span>
+          <span id="cart-total-price-label" class="text-xl font-black text-primary-container">1 420 000 UZS</span>
+        </div>
+        <button onclick="navigate('checkout')" class="w-full bg-primary-container text-on-primary-container font-bold text-sm h-12 rounded-2xl shadow-md hover:bg-amber-400 btn-press flex items-center justify-center gap-2">
+          <span>Buyurtma berish</span>
+          <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 4: BUYURTMA BERISH (CHECKOUT)                          -->
+    <!-- ============================================================== -->
+    <section id="screen-checkout" class="screen-view hidden flex-1 flex flex-col pb-10">
+      <!-- Top App Bar -->
+      <header class="sticky top-0 z-40 flex items-center px-4 h-14 w-full bg-background/95 backdrop-blur-md border-b border-gray-100">
+        <button onclick="navigateBack()" class="p-2 -ml-2 rounded-full text-on-background hover:bg-surface-container-low btn-press">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <span class="text-lg font-bold text-on-background ml-2">Buyurtma berish</span>
+      </header>
+
+      <main class="w-full flex flex-col px-4 gap-5 pt-4">
+        <!-- Delivery Address Section -->
+        <section class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-2 text-on-background font-bold text-base">
+            <span class="material-symbols-outlined text-primary-container">location_on</span>
+            <h2>Yetkazib berish manzili</h2>
+          </div>
+
+          <!-- Dynamic Address List -->
+          <div id="checkout-address-list" class="flex flex-col gap-2.5">
+            <!-- Rendered via JS -->
+          </div>
+
+          <!-- Add New Address Button -->
+          <button onclick="openAddAddress('checkout')" class="w-full py-3 px-4 rounded-2xl border-2 border-dashed border-primary-container/60 hover:border-primary-container text-primary-container font-semibold text-xs flex items-center justify-center gap-2 bg-amber-50/50 hover:bg-amber-50 btn-press transition-all">
+            <span class="material-symbols-outlined text-[18px]">add_location_alt</span>
+            <span>Xaritadan yangi manzil qo'shish (OpenStreetMap)</span>
+          </button>
+        </section>
+
+        <!-- Payment Method Section -->
+        <section class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-2 text-on-background font-bold text-base">
+            <span class="material-symbols-outlined text-primary-container">payments</span>
+            <h2>To'lov usuli</h2>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5">
+            <!-- Cash on delivery -->
+            <label class="payment-card bg-amber-50/80 border-2 border-primary-container rounded-2xl p-3 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-sm text-center transition-all">
+              <input type="radio" name="payment_method" value="cash" checked class="hidden" onchange="selectPaymentCard(this)"/>
+              <div class="w-11 h-11 rounded-2xl bg-amber-100 flex items-center justify-center shadow-sm text-amber-800 border border-amber-200">
+                <span class="material-symbols-outlined text-2xl">payments</span>
+              </div>
+              <span class="text-xs font-bold text-on-background">Naqd pul</span>
+            </label>
+
+            <!-- Payme -->
+            <label class="payment-card bg-surface-container-lowest border border-outline-light rounded-2xl p-3 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-sm text-center hover:border-gray-300 transition-all">
+              <input type="radio" name="payment_method" value="payme" class="hidden" onchange="selectPaymentCard(this)"/>
+              <div class="w-11 h-11 rounded-2xl bg-white flex items-center justify-center shadow-sm p-1 border border-outline-light overflow-hidden">
+                <img src="assets/payme.png" alt="Payme" class="w-full h-full object-contain"/>
+              </div>
+              <span class="text-xs font-bold text-on-background">Payme</span>
+            </label>
+
+            <!-- Click -->
+            <label class="payment-card bg-surface-container-lowest border border-outline-light rounded-2xl p-3 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-sm text-center hover:border-gray-300 transition-all">
+              <input type="radio" name="payment_method" value="click" class="hidden" onchange="selectPaymentCard(this)"/>
+              <div class="w-11 h-11 rounded-2xl bg-[#26272b] flex items-center justify-center shadow-sm p-1 border border-gray-700 overflow-hidden">
+                <img src="assets/click.png" alt="Click" class="w-full h-full object-contain"/>
+              </div>
+              <span class="text-xs font-bold text-on-background">Click</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Order Comment Box -->
+        <section class="flex flex-col gap-2">
+          <div class="flex items-center gap-2 text-on-background font-bold text-sm">
+            <span class="material-symbols-outlined text-secondary text-[18px]">chat</span>
+            <h3>Izoh (ixtiyoriy)</h3>
+          </div>
+          <textarea id="checkout-comment" rows="2" placeholder="Kuryer uchun qo'shimcha ma'lumotlar, darvoza kodi, orientir..." class="w-full bg-surface-container-lowest border border-outline-light rounded-2xl p-3 text-xs text-on-background focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container outline-none resize-none placeholder:text-gray-400 shadow-subtle"></textarea>
+        </section>
+
+        <!-- Order Summary Card -->
+        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-card border border-outline-light flex flex-col gap-3">
+          <h3 class="text-base font-bold text-on-background">Buyurtma xulosasi</h3>
+          
+          <div class="flex justify-between items-center text-xs text-secondary">
+            <span>Mahsulotlar (<span id="checkout-items-count">3</span>):</span>
+            <span id="checkout-subtotal" class="font-bold text-on-background">4 500 000 so'm</span>
+          </div>
+          <div class="flex justify-between items-center text-xs text-secondary">
+            <span>Yetkazib berish:</span>
+            <span id="checkout-delivery-fee" class="font-bold text-on-background">150 000 so'm</span>
+          </div>
+
+          <div class="h-[1px] bg-gray-200 my-1"></div>
+
+          <div class="flex justify-between items-center">
+            <span class="text-base font-extrabold text-on-background">Jami:</span>
+            <span id="checkout-total" class="text-xl font-black text-primary-container">4 650 000 so'm</span>
+          </div>
+
+          <button onclick="placeOrder()" class="w-full mt-2 bg-primary-container text-on-primary-container font-bold text-sm h-12 rounded-xl shadow-md hover:bg-amber-400 btn-press flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">verified</span>
+            <span>Buyurtmani tasdiqlash</span>
+          </button>
+        </section>
+      </main>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 5: BUYURTMALAR (ORDERS LIST)                           -->
+    <!-- ============================================================== -->
+    <section id="screen-orders" class="screen-view hidden flex-1 flex flex-col pb-24">
+      <!-- Top App Bar -->
+      <header class="sticky top-0 z-40 flex justify-between items-center px-4 h-14 w-full bg-background/95 backdrop-blur-md">
+        <div class="flex items-center gap-2.5 cursor-pointer" onclick="navigate('home')">
+          <img class="w-8 h-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" alt="Avatar"/>
+          <span class="text-xl font-bold text-on-background tracking-tight">TAXTABOZOR81</span>
+        </div>
+        <button onclick="showToast('Sizda yangi bildirishnomalar yo\'q', 'notifications')" class="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+      </header>
+
+      <main class="w-full flex flex-col px-4 gap-4 pt-1">
+        <h1 class="text-2xl font-extrabold text-on-background">Buyurtmalarim</h1>
+
+        <!-- Filter Tabs -->
+        <div class="flex gap-2">
+          <button onclick="filterOrders('all', this)" class="order-tab-btn px-4 py-2 rounded-full bg-primary-container text-on-primary-container font-bold text-xs shadow-sm">Barchasi</button>
+          <button onclick="filterOrders('active', this)" class="order-tab-btn px-4 py-2 rounded-full bg-surface-container-lowest border border-outline-light text-secondary font-medium text-xs hover:bg-gray-100">Faol</button>
+          <button onclick="filterOrders('completed', this)" class="order-tab-btn px-4 py-2 rounded-full bg-surface-container-lowest border border-outline-light text-secondary font-medium text-xs hover:bg-gray-100">Yakunlangan</button>
+        </div>
+
+        <!-- Orders Cards Container -->
+        <div id="orders-list-container" class="flex flex-col gap-3.5">
+          <!-- Rendered dynamically via JS -->
+        </div>
+      </main>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 6: BUYURTMA TAFSILOTLARI (ORDER DETAIL)                -->
+    <!-- ============================================================== -->
+    <section id="screen-order-detail" class="screen-view hidden flex-1 flex flex-col pb-10">
+      <!-- Top App Bar -->
+      <header class="sticky top-0 z-40 flex items-center px-4 h-14 w-full bg-background/95 backdrop-blur-md border-b border-gray-100">
+        <button onclick="navigate('orders')" class="p-2 -ml-2 rounded-full text-on-background hover:bg-surface-container-low btn-press">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <span class="text-lg font-bold text-on-background ml-2">Buyurtma #A-1492</span>
+      </header>
+
+      <main class="w-full flex flex-col px-4 gap-4 pt-4">
+        <!-- Status Tracker Card -->
+        <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-card border border-outline-light flex flex-col gap-4">
+          <div class="flex justify-between items-start">
+            <div>
+              <h2 class="text-lg font-bold text-on-background">Yetkazilmoqda</h2>
+              <p class="text-xs text-secondary mt-0.5">Bugun, 14:30 da kutilmoqda</p>
+            </div>
+            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">local_shipping</span>
+              <span>Jarayonda</span>
+            </span>
+          </div>
+
+          <!-- Step Progress Timeline -->
+          <div class="relative pl-6 flex flex-col gap-5 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-primary-container">
+            <!-- Step 1 (Done) -->
+            <div class="relative flex flex-col">
+              <span class="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-primary-container text-white flex items-center justify-center shadow-sm">
+                <span class="material-symbols-outlined text-[12px] font-bold">check</span>
+              </span>
+              <span class="text-xs font-bold text-on-background">Yangi</span>
+              <span class="text-[10px] text-gray-500">12 Okt, 09:15</span>
+            </div>
+
+            <!-- Step 2 (Done) -->
+            <div class="relative flex flex-col">
+              <span class="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-primary-container text-white flex items-center justify-center shadow-sm">
+                <span class="material-symbols-outlined text-[12px] font-bold">check</span>
+              </span>
+              <span class="text-xs font-bold text-on-background">Tasdiqlangan</span>
+              <span class="text-[10px] text-gray-500">12 Okt, 10:00</span>
+            </div>
+
+            <!-- Step 3 (Current Active) -->
+            <div class="relative flex flex-col">
+              <span class="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-md animate-pulse">
+                <span class="material-symbols-outlined text-[12px]">local_shipping</span>
+              </span>
+              <span class="text-xs font-bold text-amber-700">Yetkazilmoqda</span>
+              <span class="text-[10px] text-gray-600 font-medium">Kuryer yo'lda (Aliyev T.) • +998 90 999 88 77</span>
+            </div>
+
+            <!-- Step 4 (Pending) -->
+            <div class="relative flex flex-col">
+              <span class="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[12px]">home</span>
+              </span>
+              <span class="text-xs font-medium text-gray-400">Yakunlangan</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery Address Snapshot -->
+        <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-card border border-outline-light flex items-center gap-3">
+          <div class="w-14 h-14 rounded-xl bg-amber-50 flex items-center justify-center text-primary-container overflow-hidden shrink-0 border border-amber-200">
+            <span class="material-symbols-outlined text-3xl">map</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[11px] text-secondary font-medium flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px] text-primary-container">pin_drop</span>
+              Yetkazib berish manzili
+            </span>
+            <span class="text-xs font-bold text-on-background mt-0.5">Yunusobod tumani, 4-mavze, 12-uy</span>
+          </div>
+        </div>
+
+        <!-- Ordered Products Summary -->
+        <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-card border border-outline-light flex flex-col gap-3">
+          <h3 class="text-sm font-bold text-on-background border-b border-gray-100 pb-2">Mahsulotlar (3)</h3>
+
+          <div class="flex items-center justify-between text-xs py-1">
+            <div class="flex items-center gap-2.5">
+              <img class="w-10 h-10 rounded-lg object-cover bg-gray-100" src="https://images.unsplash.com/photo-1590069261209-f8e9b8642343?w=120&auto=format&fit=crop&q=80" alt="G'isht"/>
+              <div>
+                <p class="font-bold text-on-background">Qizil g'isht (Oddiy)</p>
+                <p class="text-[11px] text-gray-500">1000 dona x 1,200 so'm</p>
+              </div>
+            </div>
+            <span class="font-bold text-on-background">1,200,000</span>
+          </div>
+
+          <div class="flex items-center justify-between text-xs py-1">
+            <div class="flex items-center gap-2.5">
+              <img class="w-10 h-10 rounded-lg object-cover bg-gray-100" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80" alt="Sement"/>
+              <div>
+                <p class="font-bold text-on-background">Sement M400</p>
+                <p class="text-[11px] text-gray-500">20 qop x 55,000 so'm</p>
+              </div>
+            </div>
+            <span class="font-bold text-on-background">1,100,000</span>
+          </div>
+
+          <div class="h-[1px] bg-gray-100 my-1"></div>
+
+          <div class="flex justify-between text-xs text-secondary">
+            <span>Mahsulotlar narxi:</span>
+            <span class="font-semibold text-on-background">2,300,000 so'm</span>
+          </div>
+          <div class="flex justify-between text-xs text-secondary">
+            <span>Yetkazib berish:</span>
+            <span class="font-semibold text-on-background">150,000 so'm</span>
+          </div>
+          <div class="flex justify-between text-sm font-extrabold text-on-background pt-1 border-t border-gray-100">
+            <span>Jami:</span>
+            <span class="text-primary-container text-base">2,450,000 so'm</span>
+          </div>
+        </div>
+
+        <!-- Payment Info Card -->
+        <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-card border border-outline-light flex justify-between items-center text-xs">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-primary-container">credit_card</span>
+            <div>
+              <p class="text-gray-500 text-[10px]">To'lov usuli</p>
+              <p class="font-bold text-on-background">Uzcard orqali to'langan</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-gray-500 text-[10px]">Sana</p>
+            <p class="font-bold text-on-background">12.10.2023</p>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 7: PROFIL (PROFILE)                                    -->
+    <!-- ============================================================== -->
+    <section id="screen-profile" class="screen-view hidden flex-1 flex flex-col pb-24">
+      <!-- Top App Bar -->
+      <header class="sticky top-0 z-40 flex justify-between items-center px-4 h-14 w-full bg-background/95 backdrop-blur-md">
+        <div class="flex items-center gap-2.5 cursor-pointer" onclick="navigate('home')">
+          <img class="w-8 h-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" alt="Avatar"/>
+          <span class="text-xl font-bold text-on-background tracking-tight">TAXTABOZOR81</span>
+        </div>
+        <button onclick="showToast('Sizda yangi bildirishnomalar yo\'q', 'notifications')" class="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-low transition-colors">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+      </header>
+
+      <main class="w-full flex flex-col px-4 gap-4 pt-1">
+        <!-- User Info Card -->
+        <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-card border border-outline-light flex items-center gap-4">
+          <div class="relative">
+            <img class="w-16 h-16 rounded-full object-cover border-2 border-primary-container shadow-md" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80" alt="Rustamjon Aliyev"/>
+            <span class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></span>
+          </div>
+          <div class="flex flex-col gap-1">
+            <h2 class="text-lg font-bold text-on-background leading-none">Rustamjon Aliyev</h2>
+            <p class="text-xs text-secondary">+998 90 123 45 67</p>
+            <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full w-max mt-0.5">
+              Premium Mijoz
+            </span>
+          </div>
+        </div>
+
+        <!-- Menu Navigation List -->
+        <div class="bg-surface-container-lowest rounded-2xl shadow-card border border-outline-light overflow-hidden flex flex-col divide-y divide-gray-100">
+          <button onclick="navigate('saved-addresses')" class="p-3.5 flex items-center justify-between hover:bg-gray-50 btn-press text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-primary-container">
+                <span class="material-symbols-outlined text-[20px]">location_on</span>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-on-background">Mening manzillarim</span>
+                <p id="profile-address-count" class="text-[10px] text-gray-500">2 ta saqlangan manzil</p>
+              </div>
+            </div>
+            <span class="material-symbols-outlined text-gray-400 text-[18px]">chevron_right</span>
+          </button>
+
+          <button onclick="navigate('favorites')" class="p-3.5 flex items-center justify-between hover:bg-gray-50 btn-press text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-secondary">
+                <span class="material-symbols-outlined text-[20px]">favorite</span>
+              </div>
+              <span class="text-xs font-bold text-on-background">Sevimlilar</span>
+            </div>
+            <span class="material-symbols-outlined text-gray-400 text-[18px]">chevron_right</span>
+          </button>
+
+          <button onclick="navigate('orders')" class="p-3.5 flex items-center justify-between hover:bg-gray-50 btn-press text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-secondary">
+                <span class="material-symbols-outlined text-[20px]">history</span>
+              </div>
+              <span class="text-xs font-bold text-on-background">Buyurtmalar tarixi</span>
+            </div>
+            <span class="material-symbols-outlined text-gray-400 text-[18px]">chevron_right</span>
+          </button>
+
+          <button onclick="showToast('Til: O\'zbekcha (Lotin)', 'language')" class="p-3.5 flex items-center justify-between hover:bg-gray-50 btn-press text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-secondary">
+                <span class="material-symbols-outlined text-[20px]">language</span>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-on-background">Til</p>
+                <p class="text-[10px] text-gray-500">O'zbekcha</p>
+              </div>
+            </div>
+            <span class="material-symbols-outlined text-gray-400 text-[18px]">chevron_right</span>
+          </button>
+
+          <button onclick="showToast('Bog\'lanish: +998 71 200 81 81', 'support_agent')" class="p-3.5 flex items-center justify-between hover:bg-gray-50 btn-press text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-secondary">
+                <span class="material-symbols-outlined text-[20px]">help</span>
+              </div>
+              <span class="text-xs font-bold text-on-background">Yordam</span>
+            </div>
+            <span class="material-symbols-outlined text-gray-400 text-[18px]">chevron_right</span>
+          </button>
+
+          <button onclick="showToast('TAXTABOZOR81 — Qurilish mollari yetkazib berish xizmati v1.0.0', 'info')" class="p-3.5 flex items-center justify-between hover:bg-gray-50 btn-press text-left">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-secondary">
+                <span class="material-symbols-outlined text-[20px]">info</span>
+              </div>
+              <span class="text-xs font-bold text-on-background">Biz haqimizda</span>
+            </div>
+            <span class="material-symbols-outlined text-gray-400 text-[18px]">chevron_right</span>
+          </button>
+        </div>
+
+        <!-- Logout Button -->
+        <button onclick="showToast('Tizimdan chiqildi', 'logout')" class="w-full py-3 px-4 rounded-2xl border border-red-500 text-red-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-red-50 btn-press transition-all">
+          <span class="material-symbols-outlined text-[18px]">logout</span>
+          <span>Tizimdan chiqish</span>
+        </button>
+      </main>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 8: SEVIMLILAR (FAVORITES)                              -->
+    <!-- ============================================================== -->
+    <section id="screen-favorites" class="screen-view hidden flex-1 flex flex-col pb-24">
+      <!-- Top App Bar -->
+      <header class="sticky top-0 z-40 flex items-center px-4 h-14 w-full bg-background/95 backdrop-blur-md border-b border-gray-100">
+        <button onclick="navigateBack()" class="p-2 -ml-2 rounded-full text-on-background hover:bg-surface-container-low btn-press">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="text-lg font-bold text-on-background ml-2">Sevimlilar</h1>
+      </header>
+
+      <main class="w-full flex flex-col px-4 gap-3 pt-3">
+        <div class="flex justify-between items-center">
+          <span id="favorites-count-label" class="text-xs text-secondary font-medium">4 ta mahsulot</span>
+          <button class="text-xs font-semibold text-primary-container flex items-center gap-1 hover:underline">
+            <span>Saralash</span>
+            <span class="material-symbols-outlined text-[16px]">sort</span>
+          </button>
+        </div>
+
+        <!-- Favorites Grid -->
+        <div id="favorites-grid" class="grid grid-cols-2 gap-3">
+          <!-- Rendered dynamically via JS -->
+        </div>
+
+        <!-- Empty Favorites State -->
+        <div id="favorites-empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center gap-3">
+          <div class="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center shadow-inner">
+            <span class="material-symbols-outlined text-4xl">favorite_border</span>
+          </div>
+          <h3 class="text-lg font-bold text-on-background">Sevimlilar ro'yxati bo'sh</h3>
+          <p class="text-xs text-gray-500 max-w-[240px]">O'zingizga yoqqan mahsulotlarning yurakchasini bosing</p>
+          <button onclick="navigate('home')" class="mt-2 bg-primary-container text-on-primary-container px-6 py-2.5 rounded-xl text-xs font-bold shadow-md hover:bg-amber-400 btn-press">
+            Katalogga o'tish
+          </button>
+        </div>
+      </main>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 10: MENING MANZILLARIM (SAVED ADDRESSES LIST)          -->
+    <!-- ============================================================== -->
+    <section id="screen-saved-addresses" class="screen-view hidden flex-1 flex flex-col pb-24">
+      <!-- Top App Bar -->
+      <header class="sticky top-0 z-40 flex justify-between items-center px-4 h-14 w-full bg-background/95 backdrop-blur-md border-b border-gray-100">
+        <div class="flex items-center gap-2">
+          <button onclick="navigateBack()" class="p-2 -ml-2 rounded-full text-on-background hover:bg-surface-container-low btn-press">
+            <span class="material-symbols-outlined">arrow_back</span>
+          </button>
+          <h1 class="text-lg font-bold text-on-background">Mening manzillarim</h1>
+        </div>
+        <button onclick="openAddAddress('saved-addresses')" class="text-primary-container text-xs font-bold flex items-center gap-1 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-xl border border-amber-200 btn-press">
+          <span class="material-symbols-outlined text-[16px]">add</span>
+          <span>Qo'shish</span>
+        </button>
+      </header>
+
+      <main class="w-full flex flex-col px-4 gap-4 pt-3">
+        <!-- Addresses List Container -->
+        <div id="saved-addresses-list" class="flex flex-col gap-3">
+          <!-- Rendered dynamically via JS -->
+        </div>
+
+        <!-- Add Address Button -->
+        <button onclick="openAddAddress('saved-addresses')" class="w-full py-3.5 px-4 rounded-2xl border-2 border-dashed border-primary-container/60 hover:border-primary-container text-primary-container font-bold text-xs flex items-center justify-center gap-2 bg-amber-50/50 hover:bg-amber-50 btn-press transition-all">
+          <span class="material-symbols-outlined text-[20px]">add_location_alt</span>
+          <span>Xaritadan yangi manzil qo'shish (OpenStreetMap)</span>
+        </button>
+
+        <!-- Empty State -->
+        <div id="saved-addresses-empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center gap-3">
+          <div class="w-20 h-20 bg-amber-50 text-primary-container rounded-full flex items-center justify-center shadow-inner">
+            <span class="material-symbols-outlined text-4xl">location_off</span>
+          </div>
+          <h3 class="text-lg font-bold text-on-background">Saqlangan manzillar yo'q</h3>
+          <p class="text-xs text-gray-500 max-w-[240px]">Qurilish mollarini tezkor qabul qilish uchun manzilingizni qo'shing</p>
+          <button onclick="openAddAddress('saved-addresses')" class="mt-2 bg-primary-container text-on-primary-container px-6 py-2.5 rounded-xl text-xs font-bold shadow-md hover:bg-amber-400 btn-press">
+            Manzil qo'shish
+          </button>
+        </div>
+      </main>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- SCREEN 9: MANZIL QO'SHISH (ADD ADDRESS WITH OPENSTREETMAP)    -->
+    <!-- ============================================================== -->
+    <section id="screen-add-address" class="screen-view hidden flex-1 flex flex-col h-screen relative bg-gray-100 overflow-hidden">
+      <!-- Back Floating Button -->
+      <button onclick="navigateBack()" class="absolute top-4 left-4 z-40 w-10 h-10 rounded-full bg-white shadow-lg text-on-background flex items-center justify-center btn-press hover:bg-gray-50 border border-gray-200">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+
+      <!-- Real OpenStreetMap Container (Full view) -->
+      <div class="w-full h-full absolute inset-0 z-0 bg-gray-200">
+        <div id="osm-map" class="w-full h-full"></div>
+
+        <!-- Center Pinpoint Marker (Floating above map center with interactive lift effect) -->
+        <div id="map-center-pin" class="center-pin-marker flex flex-col items-center">
+          <div class="w-11 h-11 bg-red-600 text-white rounded-full flex items-center justify-center shadow-2xl border-2 border-white">
+            <span class="material-symbols-outlined text-2xl text-amber-300">location_on</span>
+          </div>
+          <div class="w-4 h-2 bg-black/40 rounded-full blur-[2px] mt-0.5"></div>
+        </div>
+
+        <!-- Current Location (GPS) Button -->
+        <button id="btn-map-locate" onclick="locateUserGPS()" title="Mening joylashuvim" class="absolute bottom-80 right-4 z-20 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center text-primary-container hover:bg-amber-50 btn-press border border-gray-200">
+          <span class="material-symbols-outlined text-2xl">my_location</span>
+        </button>
+      </div>
+
+      <!-- Bottom Sheet Modal Form (Smooth auto-hide on map drag/pan) -->
+      <div id="address-bottom-sheet" class="absolute bottom-0 left-0 right-0 z-30 bg-surface-container-lowest rounded-t-3xl shadow-2xl p-5 flex flex-col gap-4 border-t border-outline-light">
+        <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto -mt-2"></div>
+        
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-bold text-on-background">Manzilni saqlash</h2>
+          <span id="geo-status-badge" class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1">
+            <span class="material-symbols-outlined text-[12px]">explore</span>
+            <span>OpenStreetMap</span>
+          </span>
+        </div>
+
+        <!-- Geocoded Address Box -->
+        <div class="bg-gray-50 border border-outline-light rounded-2xl p-3 flex items-start gap-2.5 shadow-subtle">
+          <span class="material-symbols-outlined text-primary-container text-[22px] mt-0.5 shrink-0">location_on</span>
+          <div class="flex flex-col min-w-0">
+            <span id="geo-address-title" class="text-xs font-bold text-on-background truncate">Andijon shahri, Xo'tanariq mahallasi</span>
+            <span id="geo-address-detail" class="text-[11px] text-gray-500 line-clamp-2 mt-0.5">D109 yo'li, Damariq</span>
+            <span id="geo-coords" class="text-[9px] text-gray-400 font-mono mt-0.5">40.78339° N, 72.35062° E</span>
+          </div>
+        </div>
+
+        <!-- Form Inputs -->
+        <div class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-secondary mb-1">Manzil nomi</label>
+            <input id="input-address-name" type="text" placeholder="Masalan: Uy, Ishxona, Obyekt" class="w-full bg-white border border-outline-light rounded-xl p-3 text-xs text-on-background focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container outline-none shadow-subtle"/>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-secondary mb-1">Qo'shimcha ma'lumot (Ixtiyoriy)</label>
+            <input id="input-address-extra" type="text" placeholder="Podyezd, qavat, xonadon raqami, mo'ljal..." class="w-full bg-white border border-outline-light rounded-xl p-3 text-xs text-on-background focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container outline-none shadow-subtle"/>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <button onclick="saveNewAddress()" class="w-full mt-1 bg-primary-container text-on-primary-container font-bold text-sm h-12 rounded-xl shadow-md hover:bg-amber-400 btn-press flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">save</span>
+          <span>Saqlash</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- GLOBAL BOTTOM NAVIGATION BAR (4 TABS)                          -->
+    <!-- ============================================================== -->
+    <nav id="bottom-nav-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] z-40 bg-surface-container-lowest/95 backdrop-blur-md shadow-floating border-t border-outline-light flex justify-around items-center h-16 px-2">
+      <!-- Bosh sahifa -->
+      <button onclick="navigate('home')" id="nav-tab-home" class="nav-tab flex flex-col items-center justify-center flex-1 text-primary-container transition-all">
+        <span class="material-symbols-outlined text-[22px] nav-icon icon-fill">home</span>
+        <span class="text-[10px] font-bold nav-label mt-0.5">Bosh sahifa</span>
+      </button>
+
+      <!-- Savatcha -->
+      <button onclick="navigate('cart')" id="nav-tab-cart" class="nav-tab flex flex-col items-center justify-center flex-1 text-secondary hover:text-on-background relative transition-all">
+        <div class="relative">
+          <span class="material-symbols-outlined text-[22px] nav-icon">shopping_cart</span>
+          <span id="nav-cart-badge" class="absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">3</span>
+        </div>
+        <span class="text-[10px] font-medium nav-label mt-0.5">Savat</span>
+      </button>
+
+      <!-- Buyurtmalar -->
+      <button onclick="navigate('orders')" id="nav-tab-orders" class="nav-tab flex flex-col items-center justify-center flex-1 text-secondary hover:text-on-background transition-all">
+        <span class="material-symbols-outlined text-[22px] nav-icon">receipt_long</span>
+        <span class="text-[10px] font-medium nav-label mt-0.5">Buyurtmalar</span>
+      </button>
+
+      <!-- Profil -->
+      <button onclick="navigate('profile')" id="nav-tab-profile" class="nav-tab flex flex-col items-center justify-center flex-1 text-secondary hover:text-on-background transition-all">
+        <span class="material-symbols-outlined text-[22px] nav-icon">person</span>
+        <span class="text-[10px] font-medium nav-label mt-0.5">Profil</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT STATE & APPLICATION LOGIC                          -->
+  <!-- ============================================================== -->
+  <script>
+    // Initialize Telegram WebApp SDK if available
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
+      try {
+        window.Telegram.WebApp.setHeaderColor('#F9F9F9');
+        window.Telegram.WebApp.setBackgroundColor('#F9F9F9');
+      } catch(e) {}
+    }
+
+    // Mock Products Database with High-Quality Construction Assets
+    const PRODUCTS = [
+      {
+        id: 1,
+        name: "Premium Qizil G'isht (M150)",
+        category: "G'isht",
+        price: 1200,
+        unit: "1 dona",
+        image: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?w=500&auto=format&fit=crop&q=80",
+        inStock: true,
+        featured: true,
+        discount: null,
+        description: "Pishgan sifatli qizil g'isht. Mustahkam poydevor va yuk ko'taruvchi devorlar uchun M-150 markali chidamli g'isht.",
+        weight: "3.2 kg",
+        brand: "M-150 Standart",
+        origin: "O'zbekiston (Toshkent zavodi)"
+      },
+      {
+        id: 2,
+        name: "Sement Portland M400",
+        category: "Sement",
+        price: 45000,
+        unit: "50 kg / qop",
+        image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
+        inStock: true,
+        featured: true,
+        discount: null,
+        description: "Yuqori sifatli M-400 markali Portland sementi. Poshdevor, devor qurilishi va umumiy beton ishlari uchun ideal. Qotish vaqti tez va mustahkamligi yuqori.",
+        weight: "50 kg",
+        brand: "M-400",
+        origin: "Qizilqumsement"
+      },
+      {
+        id: 3,
+        name: "Tozalangan Daryo Qumi",
+        category: "Qum",
+        price: 80000,
+        unit: "1 tonna",
+        image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&auto=format&fit=crop&q=80",
+        inStock: true,
+        featured: true,
+        discount: null,
+        description: "Suvda yuvilgan, loy va iflosliklardan tozalangan mayda donali daryo qumi. Suvoq va beton qorishmalari uchun a'lo darajadagi xomashyo.",
+        weight: "1000 kg",
+        brand: "Chirchiq Daryo",
+        origin: "Chirchiq kareri"
+      },
+      {
+        id: 4,
+        name: "Qarag'ay Yog'och (Taxta)",
+        category: "Yog'och",
+        price: 1890000,
+        unit: "1 kub",
+        image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=500&auto=format&fit=crop&q=80",
+        inStock: true,
+        featured: true,
+        discount: "-10%",
+        description: "1-navli Rossiya qarag'ay taxtasi. Tom qismi karkaslari, pol va umumiy qurilish maqsadlari uchun yaxshi quritilgan.",
+        weight: "550 kg/m³",
+        brand: "Rossiya Qarag'ay",
+        origin: "Rossiya (Sibir)"
+      },
+      {
+        id: 5,
+        name: "Armatura 12mm (A500C)",
+        category: "Metall",
+        price: 8500,
+        unit: "1 metr",
+        image: "https://images.unsplash.com/photo-1535813547-99c456a41d4a?w=500&auto=format&fit=crop&q=80",
+        inStock: true,
+        featured: true,
+        discount: null,
+        description: "Rossiya standartidagi mustahkam A500C armatura. Seysmik chidamli karkaslar va poydevor armaturalash uchun.",
+        weight: "0.888 kg/m",
+        brand: "A500C",
+        origin: "O'zmetkombinat"
+      },
+      {
+        id: 6,
+        name: "Perforator Bosch GBH 2-26",
+        category: "Asboblar",
+        price: 1450000,
+        unit: "1 dona",
+        image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=500&auto=format&fit=crop&q=80",
+        inStock: true,
+        featured: false,
+        discount: null,
+        description: "Professional 800W quvvatli perforator. Beton, tosh va g'ishtlarni tezkor burg'ulash uchun 3 xil ish rejimi.",
+        weight: "2.8 kg",
+        brand: "Bosch Professional",
+        origin: "Germaniya"
+      },
+      {
+        id: 7,
+        name: "Shlakoblok (20x20x40)",
+        category: "G'isht",
+        price: 3500,
+        unit: "1 dona",
+        image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=500&auto=format&fit=crop&q=80",
+        inStock: false,
+        featured: false,
+        discount: null,
+        description: "Pishiq presslangan devorbob shlakoblok. Obyekt atrofiga devor qurish va omborxonalar uchun eng tejamkor yechim.",
+        weight: "14 kg",
+        brand: "Standart Press",
+        origin: "Toshkent"
+      },
+      {
+        id: 8,
+        name: "Qum (Yuvilgan, Zangiota)",
+        category: "Qum",
+        price: 120000,
+        unit: "1 tonna",
+        image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&auto=format&fit=crop&q=80",
+        inStock: true,
+        featured: false,
+        discount: null,
+        description: "Yuqori sifatli yuvilgan Zangiota qumi. Maxsus quyma beton va suvoqlar uchun tavsiya etiladi.",
+        weight: "1000 kg",
+        brand: "Zangiota Lux",
+        origin: "Zangiota"
+      }
+    ];
+
+    // Categories List
+    const CATEGORIES = ["Barchasi", "G'isht", "Sement", "Yog'och", "Qum", "Asboblar"];
+
+    // App Global State
+    let state = {
+      currentScreen: 'home',
+      screenHistory: ['home'],
+      selectedCategory: 'Barchasi',
+      searchQuery: '',
+      currentProductId: 2,
+      detailQuantity: 1,
+      selectedAddressId: 'addr_1',
+      addresses: [
+        {
+          id: 'addr_1',
+          name: "Asosiy manzil",
+          address: "Toshkent shahar, Yunusobod tumani, 19-kvartal, 42-uy",
+          phone: "+998 90 123 45 67",
+          recipient: "Alisher Rustamov",
+          lat: 41.3654,
+          lng: 69.2882
+        },
+        {
+          id: 'addr_2',
+          name: "Obyekt",
+          address: "Toshkent viloyati, Qibray tumani, Navoiy ko'chasi, 15-uy",
+          phone: "+998 93 987 65 43",
+          recipient: "Alisher Rustamov",
+          lat: 41.3852,
+          lng: 69.4521
+        }
+      ],
+      cart: [
+        { productId: 2, quantity: 2 },
+        { productId: 1, quantity: 1000 },
+        { productId: 5, quantity: 10 }
+      ],
+      favorites: [1, 2, 7, 8],
+      orders: [
+        {
+          id: "1042",
+          date: "12 Oktabr, 2023",
+          status: "new",
+          statusLabel: "Yangi",
+          statusBadgeClass: "bg-amber-100 text-amber-800",
+          statusIcon: "pending",
+          totalSum: "4,500,000 UZS",
+          itemsCount: "3 xil mahsulot",
+          canRepeat: false
+        },
+        {
+          id: "1038",
+          date: "10 Oktabr, 2023",
+          status: "shipping",
+          statusLabel: "Yetkazilmoqda",
+          statusBadgeClass: "bg-blue-100 text-blue-800",
+          statusIcon: "local_shipping",
+          totalSum: "12,800,000 UZS",
+          itemsCount: "12 xil mahsulot",
+          canRepeat: false
+        },
+        {
+          id: "0985",
+          date: "25 Sentyabr, 2023",
+          status: "completed",
+          statusLabel: "Yakunlangan",
+          statusBadgeClass: "bg-emerald-100 text-emerald-800",
+          statusIcon: "check_circle",
+          totalSum: "1,250,000 UZS",
+          itemsCount: "1 xil mahsulot",
+          canRepeat: true
+        }
+      ]
+    };
+
+    // Format number to currency string
+    function formatPrice(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm";
+    }
+
+    // Toast Utility
+    let toastTimeout;
+    function showToast(msg, icon = 'check_circle') {
+      const banner = document.getElementById('toast-banner');
+      document.getElementById('toast-message').innerText = msg;
+      document.getElementById('toast-icon').innerText = icon;
+      banner.classList.remove('hidden');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 3200);
+    }
+    function hideToast() {
+      document.getElementById('toast-banner').classList.add('hidden');
+    }
+
+    // Navigation Router
+    function navigate(screenName, addToHistory = true) {
+      if (addToHistory && state.currentScreen !== screenName) {
+        state.screenHistory.push(screenName);
+      }
+      state.currentScreen = screenName;
+
+      // Hide all screens
+      document.querySelectorAll('.screen-view').forEach(el => el.classList.add('hidden'));
+
+      // Show target screen
+      const target = document.getElementById(`screen-${screenName}`);
+      if (target) {
+        target.classList.remove('hidden');
+        window.scrollTo(0, 0);
+      }
+
+      // Update Bottom Navigation Active States
+      updateBottomNav();
+
+      // Refresh dynamic screen content if needed
+      if (screenName === 'cart') renderCart();
+      if (screenName === 'favorites') renderFavorites();
+      if (screenName === 'orders') renderOrders();
+      if (screenName === 'checkout') renderCheckoutAddresses();
+      if (screenName === 'saved-addresses') renderSavedAddresses();
+      if (screenName === 'add-address') initOpenStreetMap();
+      if (screenName === 'profile') updateProfileAddressCount();
+
+      // Telegram Haptic
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+      }
+    }
+
+    function navigateBack() {
+      if (state.screenHistory.length > 1) {
+        state.screenHistory.pop();
+        const prev = state.screenHistory[state.screenHistory.length - 1];
+        navigate(prev, false);
+      } else {
+        navigate('home', false);
+      }
+    }
+
+    function updateBottomNav() {
+      const nav = document.getElementById('bottom-nav-bar');
+      // Hide bottom nav on detail, checkout, add-address, and saved-addresses screens
+      if (['product-detail', 'checkout', 'add-address', 'order-detail', 'saved-addresses'].includes(state.currentScreen)) {
+        nav.classList.add('hidden');
+      } else {
+        nav.classList.remove('hidden');
+      }
+
+      // Update active tab styling
+      const tabs = ['home', 'cart', 'orders', 'profile'];
+      tabs.forEach(tab => {
+        const btn = document.getElementById(`nav-tab-${tab}`);
+        if (!btn) return;
+        const icon = btn.querySelector('.nav-icon');
+        const label = btn.querySelector('.nav-label');
+
+        if (state.currentScreen === tab) {
+          btn.className = "nav-tab flex flex-col items-center justify-center flex-1 text-primary-container transition-all";
+          icon.classList.add('icon-fill');
+          label.className = "text-[10px] font-bold nav-label mt-0.5";
+        } else {
+          btn.className = "nav-tab flex flex-col items-center justify-center flex-1 text-secondary hover:text-on-background transition-all";
+          icon.classList.remove('icon-fill');
+          label.className = "text-[10px] font-medium nav-label mt-0.5";
+        }
+      });
+
+      // Update cart badge
+      const totalCartQty = state.cart.reduce((acc, item) => acc + item.quantity, 0);
+      const badge = document.getElementById('nav-cart-badge');
+      if (totalCartQty > 0) {
+        badge.innerText = state.cart.length;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // Render Home Categories
+    function renderCategories() {
+      const container = document.getElementById('category-chips');
+      container.innerHTML = CATEGORIES.map(cat => {
+        const isActive = state.selectedCategory === cat;
+        return `
+          <button onclick="filterByCategory('${cat}')" class="px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap shadow-card transition-all btn-press ${
+            isActive 
+              ? 'bg-primary-container text-on-primary-container shadow-md' 
+              : 'bg-surface-container-lowest border border-outline-light text-on-surface hover:bg-gray-100'
+          }">
+            ${cat}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function filterByCategory(cat) {
+      state.selectedCategory = cat;
+      renderCategories();
+      renderProducts();
+    }
+
+    function handleSearch(val) {
+      state.searchQuery = val.trim().toLowerCase();
+      renderProducts();
+    }
+
+    // Render Products Grid & Featured Slider
+    function renderProducts() {
+      const filtered = PRODUCTS.filter(p => {
+        const matchesCat = (state.selectedCategory === 'Barchasi' || state.selectedCategory === 'all') ? true : p.category.toLowerCase().includes(state.selectedCategory.toLowerCase());
+        const matchesQuery = state.searchQuery ? p.name.toLowerCase().includes(state.searchQuery) || p.description.toLowerCase().includes(state.searchQuery) : true;
+        return matchesCat && matchesQuery;
+      });
+
+      document.getElementById('product-count-badge').innerText = `${filtered.length} ta mahsulot`;
+
+      // Render Featured (Tavsiya etiladi - smooth horizontal slider)
+      const featuredProducts = PRODUCTS.filter(p => p.featured);
+      const featContainer = document.getElementById('featured-products-container');
+      featContainer.innerHTML = featuredProducts.map(p => {
+        const isFav = state.favorites.includes(p.id);
+        return `
+          <div class="w-[155px] min-w-[155px] bg-surface-container-lowest rounded-2xl shadow-card p-2.5 flex flex-col relative border border-outline-light group shrink-0">
+            <button onclick="toggleFavorite(${p.id}, event)" class="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-secondary hover:text-red-500 shadow-sm transition-all btn-press">
+              <span class="material-symbols-outlined text-[17px] ${isFav ? 'text-red-500 icon-fill' : ''}">favorite</span>
+            </button>
+            <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
+              <img class="w-full h-[110px] object-cover rounded-xl mb-2" src="${p.image}" alt="${p.name}"/>
+              <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold w-max mb-1 inline-block">Omborda bor</span>
+              <h4 class="text-xs font-bold text-on-background line-clamp-2 min-h-[32px]">${p.name}</h4>
+            </div>
+            <div class="mt-auto pt-2 flex justify-between items-end">
+              <div>
+                <span class="text-[10px] text-gray-500 block">${p.unit}</span>
+                <span class="text-xs font-extrabold text-primary-container">${formatPrice(p.price)}</span>
+              </div>
+              <button onclick="addToCartQuick(${p.id}, event)" class="w-7 h-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-md hover:bg-amber-400 btn-press">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Render All Products Grid
+      const grid = document.getElementById('all-products-grid');
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-2 py-10 text-center text-gray-500 text-xs flex flex-col items-center gap-2">
+            <span class="material-symbols-outlined text-3xl text-gray-400">search_off</span>
+            <span>Ushbu qidiruv bo'yicha mahsulot topilmadi</span>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => {
+        const isFav = state.favorites.includes(p.id);
+        return `
+          <div class="bg-surface-container-lowest rounded-2xl shadow-card p-2.5 flex flex-col relative border border-outline-light group">
+            <button onclick="toggleFavorite(${p.id}, event)" class="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-secondary hover:text-red-500 shadow-sm transition-all btn-press">
+              <span class="material-symbols-outlined text-[17px] ${isFav ? 'text-red-500 icon-fill' : ''}">favorite</span>
+            </button>
+            ${p.discount ? `<span class="bg-amber-500 text-white font-bold px-2 py-0.5 rounded-full text-[10px] absolute top-3 left-3 z-10 shadow-sm">${p.discount}</span>` : ''}
+            
+            <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
+              <img class="w-full aspect-square object-cover rounded-xl mb-2" src="${p.image}" alt="${p.name}"/>
+              <h4 class="text-xs font-bold text-on-background line-clamp-2 min-h-[32px]">${p.name}</h4>
+            </div>
+
+            <div class="mt-auto pt-2 flex justify-between items-end">
+              <div>
+                <span class="text-[10px] text-gray-500 block">${p.unit}</span>
+                <span class="text-xs font-extrabold text-primary-container">${formatPrice(p.price)}</span>
+              </div>
+              <button onclick="addToCartQuick(${p.id}, event)" class="w-7 h-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-md hover:bg-amber-400 btn-press">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Toggle Favorites
+    function toggleFavorite(id, e) {
+      if (e) e.stopPropagation();
+      const index = state.favorites.indexOf(id);
+      if (index > -1) {
+        state.favorites.splice(index, 1);
+        showToast("Sevimlilardan o'chirildi", "favorite_border");
+      } else {
+        state.favorites.push(id);
+        showToast("Sevimlilarga qo'shildi", "favorite");
+      }
+      renderProducts();
+      if (state.currentScreen === 'favorites') renderFavorites();
+      if (state.currentScreen === 'product-detail') updateDetailFavoriteIcon();
+    }
+
+    function toggleCurrentProductFavorite() {
+      toggleFavorite(state.currentProductId);
+    }
+
+    function updateDetailFavoriteIcon() {
+      const isFav = state.favorites.includes(state.currentProductId);
+      const icon = document.getElementById('detail-fav-icon');
+      if (isFav) {
+        icon.classList.add('text-red-500', 'icon-fill');
+      } else {
+        icon.classList.remove('text-red-500', 'icon-fill');
+      }
+    }
+
+    // Product Detail Page Logic
+    function openProductDetail(id) {
+      const product = PRODUCTS.find(p => p.id === id);
+      if (!product) return;
+
+      state.currentProductId = id;
+      state.detailQuantity = 1;
+
+      document.getElementById('detail-image').src = product.image;
+      document.getElementById('detail-title').innerText = product.name;
+      document.getElementById('detail-category').innerText = product.category;
+      document.getElementById('detail-price').innerText = formatPrice(product.price);
+      document.getElementById('detail-unit').innerText = `/ ${product.unit}`;
+      document.getElementById('detail-description').innerText = product.description;
+      document.getElementById('detail-spec-weight').innerText = product.weight;
+      document.getElementById('detail-spec-brand').innerText = product.brand;
+      document.getElementById('detail-spec-origin').innerText = product.origin;
+      document.getElementById('detail-qty-unit-label').innerText = product.unit;
+      document.getElementById('detail-qty-input').value = 1;
+      
+      updateDetailTotalPrice();
+      updateDetailFavoriteIcon();
+
+      navigate('product-detail');
+    }
+
+    function changeDetailQuantity(delta) {
+      let q = state.detailQuantity + delta;
+      if (q < 1) q = 1;
+      state.detailQuantity = q;
+      document.getElementById('detail-qty-input').value = q;
+      updateDetailTotalPrice();
+    }
+
+    function updateDetailTotalPrice() {
+      const product = PRODUCTS.find(p => p.id === state.currentProductId);
+      if (!product) return;
+      const total = product.price * state.detailQuantity;
+      document.getElementById('detail-total-calc').innerText = formatPrice(total);
+    }
+
+    function addDetailProductToCart() {
+      const item = state.cart.find(c => c.productId === state.currentProductId);
+      if (item) {
+        item.quantity += state.detailQuantity;
+      } else {
+        state.cart.push({ productId: state.currentProductId, quantity: state.detailQuantity });
+      }
+      showToast(`${state.detailQuantity} ta mahsulot savatga qo'shildi`, 'shopping_cart');
+      updateBottomNav();
+      navigate('cart');
+    }
+
+    function addToCartQuick(id, e) {
+      if (e) e.stopPropagation();
+      const item = state.cart.find(c => c.productId === id);
+      if (item) {
+        item.quantity += 1;
+      } else {
+        state.cart.push({ productId: id, quantity: 1 });
+      }
+      const prod = PRODUCTS.find(p => p.id === id);
+      showToast(`"${prod.name}" savatga qo'shildi!`, 'shopping_cart');
+      updateBottomNav();
+    }
+
+    // Cart Logic
+    function renderCart() {
+      const container = document.getElementById('cart-items-list');
+      const emptyState = document.getElementById('cart-empty-state');
+      const summaryFooter = document.getElementById('cart-summary-footer');
+
+      if (state.cart.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        summaryFooter.classList.add('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      summaryFooter.classList.remove('hidden');
+
+      let grandTotal = 0;
+      let totalUnits = 0;
+
+      container.innerHTML = state.cart.map((item, idx) => {
+        const p = PRODUCTS.find(prod => prod.id === item.productId);
+        if (!p) return '';
+        const itemTotal = p.price * item.quantity;
+        grandTotal += itemTotal;
+        totalUnits += item.quantity;
+
+        return `
+          <div class="bg-surface-container-lowest rounded-2xl p-3.5 shadow-card border border-outline-light flex items-center justify-between gap-3">
+            <img class="w-16 h-16 rounded-xl object-cover bg-gray-100 shrink-0" src="${p.image}" alt="${p.name}"/>
+            
+            <div class="flex-1 min-w-0 flex flex-col justify-between">
+              <div class="flex justify-between items-start">
+                <h4 class="text-xs font-bold text-on-background line-clamp-1">${p.name}</h4>
+                <button onclick="removeCartItem(${p.id})" class="text-red-500 hover:text-red-700 p-1 btn-press ml-1">
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              </div>
+              <span class="text-[10px] text-gray-500">${p.unit}</span>
+              
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-xs font-extrabold text-primary-container">${formatPrice(itemTotal)}</span>
+                
+                <div class="flex items-center bg-gray-100 rounded-xl overflow-hidden shadow-inner">
+                  <button onclick="updateCartQuantity(${p.id}, -1)" class="w-7 h-7 flex items-center justify-center text-on-background hover:bg-gray-200 btn-press">
+                    <span class="material-symbols-outlined text-[14px]">remove</span>
+                  </button>
+                  <span class="w-8 text-center text-xs font-bold text-on-background">${item.quantity}</span>
+                  <button onclick="updateCartQuantity(${p.id}, 1)" class="w-7 h-7 flex items-center justify-center text-on-background hover:bg-gray-200 btn-press">
+                    <span class="material-symbols-outlined text-[14px]">add</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('cart-total-count-label').innerText = `${state.cart.length} xil (${totalUnits} ta)`;
+      document.getElementById('cart-total-price-label').innerText = formatPrice(grandTotal);
+    }
+
+    function updateCartQuantity(id, delta) {
+      const item = state.cart.find(c => c.productId === id);
+      if (!item) return;
+      item.quantity += delta;
+      if (item.quantity <= 0) {
+        removeCartItem(id);
+      } else {
+        renderCart();
+        updateBottomNav();
+      }
+    }
+
+    function removeCartItem(id) {
+      state.cart = state.cart.filter(c => c.productId !== id);
+      showToast("Mahsulot savatdan olib tashlandi", "delete");
+      renderCart();
+      updateBottomNav();
+    }
+
+    function clearCart() {
+      if (state.cart.length === 0) return;
+      state.cart = [];
+      showToast("Savat tozalandi", "delete_sweep");
+      renderCart();
+      updateBottomNav();
+    }
+
+    // Checkout Logic
+    function renderCheckoutAddresses() {
+      const container = document.getElementById('checkout-address-list');
+      if (!container) return;
+
+      container.innerHTML = state.addresses.map(a => {
+        const isSelected = state.selectedAddressId === a.id;
+        return `
+          <label class="relative bg-surface-container-lowest rounded-2xl p-4 shadow-card ${isSelected ? 'border-2 border-primary-container' : 'border border-outline-light'} flex items-start gap-3 cursor-pointer transition-all">
+            <input type="radio" name="delivery_address" value="${a.id}" ${isSelected ? 'checked' : ''} onchange="state.selectedAddressId = '${a.id}'; renderCheckoutAddresses();" class="mt-1 text-primary-container focus:ring-primary-container w-5 h-5"/>
+            <div class="flex flex-col gap-0.5">
+              <span class="text-sm font-bold text-on-background">${a.address}</span>
+              ${a.name ? `<span class="text-xs text-primary-container font-semibold mt-0.5">${a.name}</span>` : ''}
+            </div>
+          </label>
+        `;
+      }).join('');
+
+      updateCheckoutSummary();
+    }
+
+    function updateCheckoutSummary() {
+      let subtotal = 0;
+      let totalUnits = 0;
+      state.cart.forEach(item => {
+        const p = PRODUCTS.find(prod => prod.id === item.productId);
+        if (p) {
+          subtotal += p.price * item.quantity;
+          totalUnits += item.quantity;
+        }
+      });
+      const deliveryFee = 150000;
+      const total = subtotal + deliveryFee;
+
+      document.getElementById('checkout-items-count').innerText = state.cart.length;
+      document.getElementById('checkout-subtotal').innerText = formatPrice(subtotal);
+      document.getElementById('checkout-delivery-fee').innerText = formatPrice(deliveryFee);
+      document.getElementById('checkout-total').innerText = formatPrice(total);
+    }
+
+    function selectPaymentCard(radio) {
+      document.querySelectorAll('.payment-card').forEach(card => {
+        card.classList.remove('bg-amber-50/80', 'border-2', 'border-primary-container');
+        card.classList.add('bg-surface-container-lowest', 'border', 'border-outline-light');
+      });
+      const selectedParent = radio.closest('.payment-card');
+      if (selectedParent) {
+        selectedParent.classList.remove('bg-surface-container-lowest', 'border-outline-light');
+        selectedParent.classList.add('bg-amber-50/80', 'border-2', 'border-primary-container');
+      }
+    }
+
+    function placeOrder() {
+      if (state.cart.length === 0) {
+        showToast("Savatchangiz bo'sh!", "error");
+        return;
+      }
+      const newOrderNumber = Math.floor(1000 + Math.random() * 9000);
+      const newOrder = {
+        id: newOrderNumber.toString(),
+        date: "Bugun, hozir",
+        status: "new",
+        statusLabel: "Yangi",
+        statusBadgeClass: "bg-amber-100 text-amber-800",
+        statusIcon: "pending",
+        totalSum: document.getElementById('checkout-total').innerText,
+        itemsCount: `${state.cart.length} xil mahsulot`,
+        canRepeat: false
+      };
+      state.orders.unshift(newOrder);
+      state.cart = [];
+      updateBottomNav();
+      showToast(`Buyurtma #${newOrderNumber} muvaffaqiyatli qabul qilindi!`, 'verified');
+      navigate('order-detail');
+    }
+
+    // Orders List Logic
+    function renderOrders(filter = 'all') {
+      const container = document.getElementById('orders-list-container');
+      let list = state.orders;
+      if (filter === 'active') list = state.orders.filter(o => o.status !== 'completed');
+      if (filter === 'completed') list = state.orders.filter(o => o.status === 'completed');
+
+      container.innerHTML = list.map(o => `
+        <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-card border border-outline-light flex flex-col gap-3">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="text-xs font-bold text-on-background">Buyurtma №${o.id}</span>
+              <p class="text-[10px] text-gray-500 mt-0.5">${o.date}</p>
+            </div>
+            <span class="${o.statusBadgeClass} px-2.5 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[13px]">${o.statusIcon}</span>
+              <span>${o.statusLabel}</span>
+            </span>
+          </div>
+
+          <div class="h-[1px] bg-gray-100 my-0.5"></div>
+
+          <div class="flex justify-between items-end">
+            <div>
+              <span class="text-[10px] text-gray-500 block">Jami summa:</span>
+              <span class="text-sm font-black text-on-background">${o.totalSum}</span>
+            </div>
+            <span class="text-[11px] text-secondary font-medium">${o.itemsCount}</span>
+          </div>
+
+          <button onclick="navigate('order-detail')" class="w-full mt-1 py-2.5 rounded-xl border border-primary-container text-primary-container font-bold text-xs hover:bg-amber-50 btn-press transition-all flex items-center justify-center gap-1.5">
+            <span>Batafsil ko'rish</span>
+            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function filterOrders(type, btn) {
+      document.querySelectorAll('.order-tab-btn').forEach(b => {
+        b.className = "order-tab-btn px-4 py-2 rounded-full bg-surface-container-lowest border border-outline-light text-secondary font-medium text-xs hover:bg-gray-100";
+      });
+      btn.className = "order-tab-btn px-4 py-2 rounded-full bg-primary-container text-on-primary-container font-bold text-xs shadow-sm";
+      renderOrders(type);
+    }
+
+    // Favorites Logic
+    function renderFavorites() {
+      const grid = document.getElementById('favorites-grid');
+      const emptyState = document.getElementById('favorites-empty-state');
+      const countLabel = document.getElementById('favorites-count-label');
+
+      const favProducts = PRODUCTS.filter(p => state.favorites.includes(p.id));
+      countLabel.innerText = `${favProducts.length} ta mahsulot`;
+
+      if (favProducts.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      grid.innerHTML = favProducts.map(p => `
+        <div class="bg-surface-container-lowest rounded-2xl shadow-card p-3 flex flex-col relative border border-outline-light">
+          <button onclick="toggleFavorite(${p.id}, event)" class="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-red-500 shadow-sm transition-all btn-press">
+            <span class="material-symbols-outlined text-[17px] icon-fill">favorite</span>
+          </button>
+
+          <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
+            <img class="w-full aspect-square object-cover rounded-xl mb-2" src="${p.image}" alt="${p.name}"/>
+            ${p.inStock ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold inline-block mb-1">Omborda bor</span>` : `<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-[10px] font-bold inline-block mb-1">Tugagan</span>`}
+            <h4 class="text-xs font-bold text-on-background line-clamp-2 min-h-[32px]">${p.name}</h4>
+          </div>
+
+          <div class="mt-2 pt-2 border-t border-gray-100 flex flex-col gap-2">
+            <div>
+              <span class="text-xs font-extrabold text-primary-container block">${formatPrice(p.price)}</span>
+              <span class="text-[10px] text-gray-500">/${p.unit}</span>
+            </div>
+
+            ${p.inStock ? `
+              <button onclick="addToCartQuick(${p.id}, event)" class="w-full py-2 bg-primary-container text-on-primary-container font-bold text-xs rounded-xl shadow-sm hover:bg-amber-400 btn-press flex items-center justify-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">shopping_cart</span>
+                <span>Savatchaga</span>
+              </button>
+            ` : `
+              <button disabled class="w-full py-2 bg-gray-200 text-gray-400 font-bold text-xs rounded-xl cursor-not-allowed">
+                Tugagan
+              </button>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ==============================================================
+    // OPENSTREETMAP (LEAFLET) INTEGRATION
+    // ==============================================================
+    let osmMap = null;
+    let currentMapCenter = { lat: 40.783394, lng: 72.350615 };
+    let geocodeTimeout = null;
+
+    function initOpenStreetMap() {
+      setTimeout(() => {
+        if (!osmMap) {
+          // Initialize map in Andijon center (40.783394, 72.350615)
+          osmMap = L.map('osm-map', {
+            zoomControl: false,
+            attributionControl: true
+          }).setView([currentMapCenter.lat, currentMapCenter.lng], 16);
+
+          // OpenStreetMap Tile Layer
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+          }).addTo(osmMap);
+
+          // Add Zoom Controls
+          L.control.zoom({ position: 'topright' }).addTo(osmMap);
+
+          const sheet = document.getElementById('address-bottom-sheet');
+          const pin = document.getElementById('map-center-pin');
+          const locateBtn = document.getElementById('btn-map-locate');
+
+          // Smoothly hide bottom sheet and lift pin when map begins moving / dragging
+          osmMap.on('movestart', () => {
+            if (sheet) sheet.classList.add('sheet-hidden');
+            if (pin) pin.classList.add('pin-dragging');
+            if (locateBtn) locateBtn.classList.add('btn-locate-low');
+          });
+
+          // Smoothly show bottom sheet and drop pin when map stops moving / hand releases
+          osmMap.on('moveend', () => {
+            if (sheet) sheet.classList.remove('sheet-hidden');
+            if (pin) pin.classList.remove('pin-dragging');
+            if (locateBtn) locateBtn.classList.remove('btn-locate-low');
+
+            const center = osmMap.getCenter();
+            currentMapCenter = { lat: center.lat, lng: center.lng };
+            updateCoordsDisplay(center.lat, center.lng);
+            debounceReverseGeocode(center.lat, center.lng);
+          });
+        } else {
+          osmMap.invalidateSize();
+        }
+
+        // Trigger initial geocode
+        reverseGeocode(currentMapCenter.lat, currentMapCenter.lng);
+      }, 150);
+    }
+
+    function updateCoordsDisplay(lat, lng) {
+      const el = document.getElementById('geo-coords');
+      if (el) el.innerText = `${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`;
+    }
+
+    function debounceReverseGeocode(lat, lng) {
+      clearTimeout(geocodeTimeout);
+      geocodeTimeout = setTimeout(() => {
+        reverseGeocode(lat, lng);
+      }, 500);
+    }
+
+    async function reverseGeocode(lat, lng) {
+      const badge = document.getElementById('geo-status-badge');
+      if (badge) badge.innerHTML = '<span class="material-symbols-outlined text-[12px] animate-spin">refresh</span> <span>Qidirilmoqda...</span>';
+      
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=uz,ru,en`);
+        if (response.ok) {
+          const data = await response.json();
+          const addr = data.address || {};
+          
+          let district = addr.suburb || addr.neighbourhood || addr.city_district || addr.district || "Toshkent shahri";
+          let city = addr.city || addr.town || addr.county || addr.state || "Toshkent";
+          let street = addr.road || addr.street || addr.pedestrian || "";
+          let house = addr.house_number ? `${addr.house_number}-uy` : "";
+
+          let fullTitle = `${city}, ${district}`;
+          let fullDetail = street ? `${street} ${house}`.trim() : (data.display_name.split(',').slice(0, 3).join(',') || "Xaritada tanlangan nuqta");
+
+          document.getElementById('geo-address-title').innerText = fullTitle;
+          document.getElementById('geo-address-detail').innerText = fullDetail;
+        }
+      } catch (err) {
+        console.warn("OSM geocode error:", err);
+      } finally {
+        if (badge) badge.innerHTML = '<span class="material-symbols-outlined text-[12px]">explore</span> <span>OpenStreetMap</span>';
+      }
+    }
+
+    function locateUserGPS() {
+      if (navigator.geolocation) {
+        showToast("Joylashuvingiz aniqlanmoqda...", "my_location");
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            currentMapCenter = { lat: latitude, lng: longitude };
+            if (osmMap) {
+              osmMap.flyTo([latitude, longitude], 16, { animate: true, duration: 1.2 });
+            }
+            showToast("Joriy joylashuv topildi!", "gps_fixed");
+          },
+          (err) => {
+            showToast("Geolokatsiyaga ruxsat berilmadi", "location_disabled");
+          },
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      } else {
+        showToast("Brauzerda GPS qo'llab-quvvatlanmaydi", "location_off");
+      }
+    }
+
+    // Address Management Logic (CRUD)
+    function openAddAddress(returnScreen = 'saved-addresses') {
+      state.addressReturnScreen = returnScreen;
+      navigate('add-address');
+    }
+
+    function renderSavedAddresses() {
+      const container = document.getElementById('saved-addresses-list');
+      const emptyState = document.getElementById('saved-addresses-empty-state');
+      if (!container) return;
+
+      updateProfileAddressCount();
+
+      if (state.addresses.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      container.innerHTML = state.addresses.map((a, idx) => {
+        const isPrimary = state.selectedAddressId === a.id || (!state.selectedAddressId && idx === 0);
+        return `
+          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-card border ${isPrimary ? 'border-2 border-primary-container' : 'border border-outline-light'} flex flex-col gap-2.5 relative transition-all">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl ${isPrimary ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-secondary'} flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[20px]">location_on</span>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-on-background">${a.name || 'Manzil'}</h3>
+                  <span class="text-[10px] text-gray-500 font-mono">${a.lat && a.lng ? `${a.lat.toFixed(4)}°, ${a.lng.toFixed(4)}°` : 'OpenStreetMap'}</span>
+                </div>
+              </div>
+              
+              <button onclick="deleteAddress('${a.id}')" title="Manzilni o'chirish" class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-50 active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-[20px]">delete</span>
+              </button>
+            </div>
+
+            <p class="text-xs text-on-surface leading-relaxed">${a.address}</p>
+
+            <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+              <span class="text-[11px] text-gray-400 font-medium flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-primary-container">pin_drop</span>
+                <span>Yetkazib berish manzili</span>
+              </span>
+              ${isPrimary ? `
+                <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                  <span>Asosiy manzil</span>
+                </span>
+              ` : `
+                <button onclick="setPrimaryAddress('${a.id}')" class="text-[11px] font-bold text-primary-container hover:underline flex items-center gap-1">
+                  <span>Asosiy qilish</span>
+                  <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function deleteAddress(id) {
+      const addr = state.addresses.find(a => a.id === id);
+      const name = addr ? addr.name : "Manzil";
+      state.addresses = state.addresses.filter(a => a.id !== id);
+      if (state.selectedAddressId === id) {
+        state.selectedAddressId = state.addresses.length > 0 ? state.addresses[0].id : null;
+      }
+      showToast(`"${name}" manzili o'chirildi`, "delete");
+      renderSavedAddresses();
+      renderCheckoutAddresses();
+      updateProfileAddressCount();
+    }
+
+    function setPrimaryAddress(id) {
+      state.selectedAddressId = id;
+      showToast("Asosiy yetkazib berish manzili o'zgartirildi", "check_circle");
+      renderSavedAddresses();
+      renderCheckoutAddresses();
+    }
+
+    function updateProfileAddressCount() {
+      const el = document.getElementById('profile-address-count');
+      if (el) el.innerText = `${state.addresses.length} ta saqlangan manzil`;
+    }
+
+    // Add Address Logic
+    function saveNewAddress() {
+      const name = document.getElementById('input-address-name').value.trim() || "Yangi manzil";
+      const extra = document.getElementById('input-address-extra').value.trim();
+      const title = document.getElementById('geo-address-title').innerText;
+      const detail = document.getElementById('geo-address-detail').innerText;
+      
+      const fullAddressText = `${title}, ${detail}` + (extra ? ` (${extra})` : '');
+      
+      const newAddressId = 'addr_' + Date.now();
+      state.addresses.push({
+        id: newAddressId,
+        name: name,
+        address: fullAddressText,
+        phone: "+998 90 123 45 67",
+        recipient: "Alisher Rustamov",
+        lat: currentMapCenter.lat,
+        lng: currentMapCenter.lng
+      });
+      
+      state.selectedAddressId = newAddressId;
+      renderCheckoutAddresses();
+      renderSavedAddresses();
+      updateProfileAddressCount();
+      
+      showToast(`"${name}" manzili muvaffaqiyatli saqlandi!`, 'add_location');
+      navigate(state.addressReturnScreen || 'saved-addresses');
+    }
+
+    function toggleFilterModal() {
+      showToast("Filtr oynasi tez orada qo'shiladi", "tune");
+    }
+
+    // Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCategories();
+      renderProducts();
+      updateBottomNav();
+    });
+  </script>
+</body>
+</html>

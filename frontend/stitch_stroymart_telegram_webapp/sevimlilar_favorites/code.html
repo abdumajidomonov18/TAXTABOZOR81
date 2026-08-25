@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html lang="uz"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>G'isht Bozor - Sevimlilar</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-background": "#1a1c1c",
+                      "surface-container-lowest": "#ffffff",
+                      "outline": "#857462",
+                      "secondary-container": "#d6e0f3",
+                      "on-tertiary-fixed": "#121c28",
+                      "secondary": "#555f6f",
+                      "surface-variant": "#e2e2e2",
+                      "error": "#ba1a1a",
+                      "surface-dim": "#dadada",
+                      "on-secondary-fixed": "#121c2a",
+                      "surface-container": "#eeeeee",
+                      "surface-bright": "#f9f9f9",
+                      "tertiary-fixed-dim": "#bdc7d8",
+                      "surface-container-high": "#e8e8e8",
+                      "on-primary-fixed": "#291800",
+                      "inverse-on-surface": "#f0f1f1",
+                      "background": "#f9f9f9",
+                      "on-surface": "#1a1c1c",
+                      "on-secondary-fixed-variant": "#3d4756",
+                      "primary-fixed-dim": "#ffb955",
+                      "on-primary-fixed-variant": "#633f00",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed": "#d9e3f6",
+                      "inverse-surface": "#2f3131",
+                      "tertiary-container": "#adb7c7",
+                      "on-secondary-container": "#596373",
+                      "inverse-primary": "#ffb955",
+                      "primary-fixed": "#ffddb4",
+                      "secondary-fixed-dim": "#bdc7d9",
+                      "outline-variant": "#d7c3ae",
+                      "on-tertiary-fixed-variant": "#3e4755",
+                      "primary-container": "#f5a623",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "primary": "#835500",
+                      "tertiary-fixed": "#d9e3f4",
+                      "on-primary-container": "#644000",
+                      "tertiary": "#555f6d",
+                      "surface-tint": "#835500",
+                      "surface-container-low": "#f3f3f3",
+                      "on-tertiary-container": "#3e4856",
+                      "on-surface-variant": "#524534",
+                      "on-secondary": "#ffffff",
+                      "surface": "#f9f9f9",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#e2e2e2"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-sm": "8px",
+                      "stack-lg": "24px",
+                      "gutter-grid": "12px",
+                      "stack-md": "16px",
+                      "base": "4px",
+                      "margin-main": "16px"
+              },
+              "fontFamily": {
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "11px",
+                              {
+                                      "lineHeight": "14px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FAFAFA;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Mobile optimization base */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 390px;
+                margin: 0 auto;
+                background-color: #f9f9f9;
+                min-height: 100vh;
+                position: relative;
+                overflow-x: hidden;
+            }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface">
+<div class="container pb-20">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-40 flex justify-between items-center px-margin-main h-14 w-full bg-background">
+<button aria-label="Orqaga qaytish" class="text-on-surface hover:opacity-80 scale-95 active:transition-transform p-2 -ml-2">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-background absolute left-1/2 transform -translate-x-1/2">Sevimlilar</h1>
+<div class="w-8"></div> <!-- Spacer for center alignment -->
+</header>
+<!-- Main Content -->
+<main class="px-margin-main py-stack-md">
+<!-- Filter/Sort Utility Row (Optional but good UX) -->
+<div class="flex justify-between items-center mb-stack-md">
+<span class="font-body-md text-body-md text-on-surface-variant">4 ta mahsulot</span>
+<button class="flex items-center gap-2 text-primary font-label-md text-label-md hover:opacity-80">
+                    Saralash
+                    <span class="material-symbols-outlined text-sm">sort</span>
+</button>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-2 gap-gutter-grid">
+<!-- Product Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] overflow-hidden flex flex-col group relative">
+<!-- Favorite Button -->
+<button class="absolute top-2 right-2 z-10 p-1.5 bg-surface-container-lowest/80 backdrop-blur-sm rounded-full shadow-sm">
+<span class="material-symbols-outlined icon-fill text-primary-container text-xl" data-icon="favorite">favorite</span>
+</button>
+<!-- Image -->
+<div class="aspect-square bg-surface-variant relative overflow-hidden">
+<img alt="Qizil g'isht" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A high-quality studio photograph of a standard red clay building brick. The lighting is crisp and even, casting subtle shadows to emphasize its rectangular shape and rough, porous texture. Shot against a clean, off-white background (#FAFAFA) suitable for a modern e-commerce catalog." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAww3VVLcSwttrbEgejQLvEikoUBJjrOE-YPMXI1EP8DvN0fRxQqQrrmkv1Cgn4GONM2tIv68X-n1iWy6XgFg1qpKiUk8sbouwYIWBNtbbIn1kFBR1_xx1mfTv-Oh5H5iwPdGt4O1EWDKYMvj-gAiak5PY7mlRYYNU8n1SnJ0DJjG3ACQKW2zOvFTMDeGp2tIUfVAcM0yMdip0jY8oD0qDJdP2orWyQZcviw7TStexfY9_wsQnygAge"/>
+<!-- Status Badge -->
+<div class="absolute bottom-2 left-2 bg-success/10 bg-[#e6f4ea] text-[#1e8e3e] px-2 py-1 rounded-full font-label-sm text-label-sm border border-[#1e8e3e]/20">
+                            Omborda bor
+                        </div>
+</div>
+<!-- Details -->
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-body-md text-body-md font-bold text-on-surface line-clamp-2 mb-1">Qizil g'isht (Standart)</h3>
+<p class="font-body-lg text-body-lg font-bold text-primary mt-auto">1 200 so'm</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">/dona</p>
+</div>
+<!-- Quick Add -->
+<button class="mx-3 mb-3 h-10 bg-primary text-on-primary rounded-lg flex items-center justify-center font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+                        Savatchaga
+                    </button>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] overflow-hidden flex flex-col group relative">
+<!-- Favorite Button -->
+<button class="absolute top-2 right-2 z-10 p-1.5 bg-surface-container-lowest/80 backdrop-blur-sm rounded-full shadow-sm">
+<span class="material-symbols-outlined icon-fill text-primary-container text-xl" data-icon="favorite">favorite</span>
+</button>
+<!-- Image -->
+<div class="aspect-square bg-surface-variant relative overflow-hidden">
+<img alt="Sement" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A professional product shot of a 50kg bag of Portland Cement. The bag features clean, industrial typography. The lighting is bright and studio-quality, highlighting the texture of the thick paper packaging. Set against a pure white background for clear e-commerce display." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtX6lZkZbI825merenqYMMoxXi6jhiT0HS1lUr0d3dktYk8ToiwGBrXquRNts3WSqfBlFxF5wwWXiYd7z22jLCo2-6Oe2t_jcTZ8EKkfKO3z0x1K2xXRb8AOsnR0pzxFhEjflsPPylvJUOSoOkz_1gDW68vEuQhSutGnJvb4yYGv-lK0ILHhxgtGILZkClrJT-W14m4ffyEbpbE8enHfQGI_KoHRynGDmMIRqrWYvlh7j4wQIODlS_"/>
+</div>
+<!-- Details -->
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-body-md text-body-md font-bold text-on-surface line-clamp-2 mb-1">Sement (M-400, 50kg)</h3>
+<p class="font-body-lg text-body-lg font-bold text-primary mt-auto">45 000 so'm</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">/qop</p>
+</div>
+<!-- Quick Add -->
+<button class="mx-3 mb-3 h-10 bg-primary text-on-primary rounded-lg flex items-center justify-center font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+                        Savatchaga
+                    </button>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] overflow-hidden flex flex-col group relative">
+<!-- Favorite Button -->
+<button class="absolute top-2 right-2 z-10 p-1.5 bg-surface-container-lowest/80 backdrop-blur-sm rounded-full shadow-sm">
+<span class="material-symbols-outlined icon-fill text-primary-container text-xl" data-icon="favorite">favorite</span>
+</button>
+<!-- Image -->
+<div class="aspect-square bg-surface-variant relative overflow-hidden">
+<img alt="Shlakoblok" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A crisp, high-resolution photo of a stack of concrete cinder blocks. The blocks are uniformly grey with distinct hollow cores. Studio lighting enhances the rough concrete texture. The background is a clean, modern off-white, fitting for a premium construction materials catalog." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqX_EwtCvdvlWmwirTL8a9Mg06IRMPl-Bi3uelSo-NbhL-n9JXvKfnx3wxNxDEMjKfwGFtG9Qqss1KPEIFyFjLyfFfivpKBxsx4Z8rCulcuNvVvP6cUsKxq9ceaXUB4Ju5HHyuWDxulotH8-f7THt7bLUXnZIX85wp1NmudMcQ-WwE7AcHL-Z8XOJVponEZhs-JorQ4FHWyQjumjk_yepW3BRLoVN2zvBzs8jLKgcryhqq7j5uAkpA"/>
+<!-- Status Badge -->
+<div class="absolute bottom-2 left-2 bg-error/10 text-error px-2 py-1 rounded-full font-label-sm text-label-sm border border-error/20">
+                            Tugagan
+                        </div>
+</div>
+<!-- Details -->
+<div class="p-3 flex flex-col flex-grow opacity-60">
+<h3 class="font-body-md text-body-md font-bold text-on-surface line-clamp-2 mb-1">Shlakoblok (20x20x40)</h3>
+<p class="font-body-lg text-body-lg font-bold text-on-surface-variant mt-auto">3 500 so'm</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">/dona</p>
+</div>
+<!-- Disabled Quick Add -->
+<button class="mx-3 mb-3 h-10 bg-surface-variant text-on-surface-variant rounded-lg flex items-center justify-center font-label-md text-label-md cursor-not-allowed" disabled="">
+                        Tugagan
+                    </button>
+</div>
+<!-- Product Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] overflow-hidden flex flex-col group relative">
+<!-- Favorite Button -->
+<button class="absolute top-2 right-2 z-10 p-1.5 bg-surface-container-lowest/80 backdrop-blur-sm rounded-full shadow-sm">
+<span class="material-symbols-outlined icon-fill text-primary-container text-xl" data-icon="favorite">favorite</span>
+</button>
+<!-- Image -->
+<div class="aspect-square bg-surface-variant relative overflow-hidden">
+<img alt="Qum" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="A detailed macro shot of a heap of fine construction sand. The lighting is warm and bright, picking up the individual grains and subtle color variations of the sand. Set against a pure white background to ensure the material stands out clearly for e-commerce." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIsyhlMPfgIme9mB_j9oTlnqgsslH_dl5q0wIlGPx26FVp1cyhXww6FmKB-jXkafEgoYRPHnG05a-DnNomcit6ufodyewr1SP_6R29EXJd-Uj4vLUPqeG8eOYHKSMKUR77yFURXs9fY_shGt3olAcYPKoBkD4AZaY3REmZUHd9fN5_87JsOIkm_t9E4nV2ioVjp0kkSyCGOXjatA-L9uv436Ets4wwqwLlr2RLOA1LR-lbPY3kFe-g"/>
+</div>
+<!-- Details -->
+<div class="p-3 flex flex-col flex-grow">
+<h3 class="font-body-md text-body-md font-bold text-on-surface line-clamp-2 mb-1">Qum (Yuvilgan, Zangiota)</h3>
+<p class="font-body-lg text-body-lg font-bold text-primary mt-auto">120 000 so'm</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">/tonna</p>
+</div>
+<!-- Quick Add -->
+<button class="mx-3 mb-3 h-10 bg-primary text-on-primary rounded-lg flex items-center justify-center font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all">
+                        Savatchaga
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

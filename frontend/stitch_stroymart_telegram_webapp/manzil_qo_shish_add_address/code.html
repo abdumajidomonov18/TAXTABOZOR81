@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="uz" class="light">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <title>Manzilni tanlang - TAXTABOZOR81</title>
+  
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  
+  <!-- Leaflet CSS & JS for OpenStreetMap -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-background": "#1a1c1c",
+            "surface-container-lowest": "#ffffff",
+            "outline": "#857462",
+            "outline-light": "#e5e7eb",
+            "primary-container": "#f5a623",
+            "primary": "#835500",
+            "background": "#f9f9f9",
+            "secondary": "#555f6f"
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    #osm-map {
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+    }
+    .leaflet-control-attribution {
+      font-size: 8px !important;
+      background: rgba(255,255,255,0.7) !important;
+      padding: 0 4px !important;
+    }
+    .center-pin-marker {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -100%);
+      z-index: 25;
+      pointer-events: none;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pin-dragging {
+      transform: translate(-50%, -130%) scale(1.15) !important;
+    }
+    #address-bottom-sheet {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out;
+      will-change: transform, opacity;
+    }
+    #address-bottom-sheet.sheet-hidden {
+      transform: translateY(115%);
+      opacity: 0;
+      pointer-events: none;
+    }
+    #btn-map-locate {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    }
+    #btn-map-locate.btn-locate-low {
+      transform: translateY(80px);
+      opacity: 0.7;
+    }
+  </style>
+</head>
+
+<body class="bg-background text-on-background w-full h-screen flex flex-col md:max-w-[420px] md:mx-auto relative overflow-hidden shadow-2xl">
+  
+  <!-- Top App Bar -->
+  <header class="absolute top-0 left-0 z-30 flex justify-between items-center px-4 h-14 w-full bg-transparent pointer-events-none">
+    <button onclick="window.history.back()" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg pointer-events-auto hover:bg-gray-50 border border-gray-100">
+      <span class="material-symbols-outlined text-on-background">arrow_back</span>
+    </button>
+  </header>
+
+  <!-- OpenStreetMap Canvas (Full view) -->
+  <main class="w-full h-full absolute inset-0 z-0 bg-gray-200">
+    <div id="osm-map" class="w-full h-full"></div>
+
+    <!-- Center Pin Marker -->
+    <div id="map-center-pin" class="center-pin-marker flex flex-col items-center">
+      <div class="w-11 h-11 bg-red-600 text-white rounded-full flex items-center justify-center shadow-2xl border-2 border-white">
+        <span class="material-symbols-outlined text-2xl text-amber-300">location_on</span>
+      </div>
+      <div class="w-4 h-2 bg-black/40 rounded-full blur-[2px] mt-0.5"></div>
+    </div>
+
+    <!-- GPS Button -->
+    <button id="btn-map-locate" onclick="locateGPS()" class="absolute right-4 bottom-80 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-xl z-20 text-primary-container hover:bg-amber-50 border border-gray-100">
+      <span class="material-symbols-outlined text-2xl">my_location</span>
+    </button>
+  </main>
+
+  <!-- Bottom Sheet Form (Smooth Auto-Hide on Drag) -->
+  <div id="address-bottom-sheet" class="absolute bottom-0 left-0 right-0 bg-surface-container-lowest rounded-t-3xl shadow-2xl z-30 p-5 flex flex-col gap-4 border-t border-outline-light">
+    <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto -mt-2"></div>
+    
+    <div class="flex justify-between items-center">
+      <h2 class="text-lg font-bold text-on-background">Manzilni saqlash</h2>
+      <span id="geo-badge" class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1">
+        <span class="material-symbols-outlined text-[12px]">explore</span>
+        <span>OpenStreetMap</span>
+      </span>
+    </div>
+
+    <!-- Address Result -->
+    <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-2xl border border-outline-light shadow-sm">
+      <span class="material-symbols-outlined text-primary-container text-2xl mt-0.5">pin_drop</span>
+      <div class="flex flex-col min-w-0">
+        <p id="addr-title" class="text-xs font-bold text-on-background truncate">Andijon shahri, Xo'tanariq mahallasi</p>
+        <p id="addr-detail" class="text-[11px] text-gray-500 line-clamp-2 mt-0.5">D109 yo'li, Damariq</p>
+        <p id="addr-coords" class="text-[9px] text-gray-400 font-mono mt-0.5">40.78339° N, 72.35062° E</p>
+      </div>
+    </div>
+
+    <!-- Input Form -->
+    <div class="flex flex-col gap-3">
+      <div>
+        <label class="block text-xs font-semibold text-secondary mb-1">Manzil nomi</label>
+        <input id="input-name" type="text" placeholder="Masalan: Uy, Ishxona, Obyekt" class="w-full bg-white border border-outline-light rounded-xl p-3 text-xs text-on-background focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container outline-none shadow-sm"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-secondary mb-1">Qo'shimcha ma'lumot (Ixtiyoriy)</label>
+        <input id="input-extra" type="text" placeholder="Podyezd, qavat, xonadon raqami, mo'ljal..." class="w-full bg-white border border-outline-light rounded-xl p-3 text-xs text-on-background focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container outline-none shadow-sm"/>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <button onclick="saveAddress()" class="w-full mt-1 bg-primary-container text-on-background font-bold text-sm h-12 rounded-xl shadow-md hover:bg-amber-400 flex items-center justify-center gap-2">
+      <span class="material-symbols-outlined text-[18px]">save</span>
+      <span>Saqlash</span>
+    </button>
+  </div>
+
+  <script>
+    let map = null;
+    let center = [40.783394, 72.350615];
+    let timeout = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      map = L.map('osm-map', {
+        zoomControl: false,
+        attributionControl: true
+      }).setView(center, 16);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      L.control.zoom({ position: 'topright' }).addTo(map);
+
+      const sheet = document.getElementById('address-bottom-sheet');
+      const pin = document.getElementById('map-center-pin');
+      const locateBtn = document.getElementById('btn-map-locate');
+
+      // Hide bottom sheet smoothly on map drag
+      map.on('movestart', () => {
+        if (sheet) sheet.classList.add('sheet-hidden');
+        if (pin) pin.classList.add('pin-dragging');
+        if (locateBtn) locateBtn.classList.add('btn-locate-low');
+      });
+
+      // Show bottom sheet smoothly on drag end
+      map.on('moveend', () => {
+        if (sheet) sheet.classList.remove('sheet-hidden');
+        if (pin) pin.classList.remove('pin-dragging');
+        if (locateBtn) locateBtn.classList.remove('btn-locate-low');
+
+        const c = map.getCenter();
+        document.getElementById('addr-coords').innerText = `${c.lat.toFixed(5)}° N, ${c.lng.toFixed(5)}° E`;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => reverseGeocode(c.lat, c.lng), 500);
+      });
+
+      reverseGeocode(center[0], center[1]);
+    });
+
+    async function reverseGeocode(lat, lng) {
+      const badge = document.getElementById('geo-badge');
+      if (badge) badge.innerHTML = '<span class="material-symbols-outlined text-[12px] animate-spin">refresh</span> <span>Qidirilmoqda...</span>';
+
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=uz,ru,en`);
+        if (res.ok) {
+          const d = await res.json();
+          const a = d.address || {};
+          let district = a.suburb || a.neighbourhood || a.city_district || a.district || "Andijon";
+          let city = a.city || a.town || a.county || a.state || "Andijon";
+          let street = a.road || a.street || a.pedestrian || "";
+          let house = a.house_number ? `${a.house_number}-uy` : "";
+
+          document.getElementById('addr-title').innerText = `${city}, ${district}`;
+          document.getElementById('addr-detail').innerText = street ? `${street} ${house}`.trim() : d.display_name.split(',').slice(0, 3).join(',');
+        }
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        if (badge) badge.innerHTML = '<span class="material-symbols-outlined text-[12px]">explore</span> <span>OpenStreetMap</span>';
+      }
+    }
+
+    function locateGPS() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((p) => {
+          map.flyTo([p.coords.latitude, p.coords.longitude], 16);
+        });
+      }
+    }
+
+    function saveAddress() {
+      alert("Manzil saqlandi!");
+      window.location.href = "../buyurtma_berish_checkout/code.html";
+    }
+  </script>
+</body>
+</html>

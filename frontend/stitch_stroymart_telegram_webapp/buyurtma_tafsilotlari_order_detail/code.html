@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html lang="uz"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Buyurtma Tafsilotlari - TAXTABOZOR81</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#1a1c1c",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#857462",
+                    "secondary-container": "#d6e0f3",
+                    "on-tertiary-fixed": "#121c28",
+                    "secondary": "#555f6f",
+                    "surface-variant": "#e2e2e2",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#dadada",
+                    "on-secondary-fixed": "#121c2a",
+                    "surface-container": "#eeeeee",
+                    "surface-bright": "#f9f9f9",
+                    "tertiary-fixed-dim": "#bdc7d8",
+                    "surface-container-high": "#e8e8e8",
+                    "on-primary-fixed": "#291800",
+                    "inverse-on-surface": "#f0f1f1",
+                    "background": "#f9f9f9",
+                    "on-surface": "#1a1c1c",
+                    "on-secondary-fixed-variant": "#3d4756",
+                    "primary-fixed-dim": "#ffb955",
+                    "on-primary-fixed-variant": "#633f00",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#d9e3f6",
+                    "inverse-surface": "#2f3131",
+                    "tertiary-container": "#adb7c7",
+                    "on-secondary-container": "#596373",
+                    "inverse-primary": "#ffb955",
+                    "primary-fixed": "#ffddb4",
+                    "secondary-fixed-dim": "#bdc7d9",
+                    "outline-variant": "#d7c3ae",
+                    "on-tertiary-fixed-variant": "#3e4755",
+                    "primary-container": "#f5a623",
+                    "error-container": "#ffdad6",
+                    "on-error-container": "#93000a",
+                    "primary": "#835500",
+                    "tertiary-fixed": "#d9e3f4",
+                    "on-primary-container": "#644000",
+                    "tertiary": "#555f6d",
+                    "surface-tint": "#835500",
+                    "surface-container-low": "#f3f3f3",
+                    "on-tertiary-container": "#3e4856",
+                    "on-surface-variant": "#524534",
+                    "on-secondary": "#ffffff",
+                    "surface": "#f9f9f9",
+                    "on-error": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-highest": "#e2e2e2"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "gutter-grid": "12px",
+                    "stack-md": "16px",
+                    "base": "4px",
+                    "margin-main": "16px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Base styles mapped to typography */
+        .font-headline-lg-mobile { font-family: 'Inter', sans-serif; font-size: 24px; line-height: 32px; font-weight: 700; letter-spacing: -0.02em; }
+        .font-headline-md { font-family: 'Inter', sans-serif; font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; }
+        .font-body-lg { font-family: 'Inter', sans-serif; font-size: 16px; line-height: 24px; font-weight: 400; }
+        .font-body-md { font-family: 'Inter', sans-serif; font-size: 14px; line-height: 20px; font-weight: 400; }
+        .font-label-md { font-family: 'Inter', sans-serif; font-size: 12px; line-height: 16px; font-weight: 600; }
+        .font-label-sm { font-family: 'Inter', sans-serif; font-size: 11px; line-height: 14px; font-weight: 500; }
+        
+        /* Timeline specific */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 24px;
+            bottom: -24px;
+            width: 2px;
+            background-color: #e2e2e2; /* surface-variant */
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+        .timeline-item:last-child .timeline-line::before {
+            display: none;
+        }
+        .timeline-icon-active {
+            box-shadow: 0 0 0 4px rgba(131, 85, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-stack-lg">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 flex justify-between items-center px-margin-main h-14 w-full bg-background">
+<button class="text-on-surface-variant hover:opacity-80 scale-95 active:transition-transform p-2 -ml-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-on-background truncate flex-1 text-center">Buyurtma #A-1492</h1>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</header>
+<!-- Main Content Area -->
+<main class="max-w-screen-md mx-auto px-margin-main pt-stack-sm pb-24 space-y-stack-lg">
+<!-- Status Header Card -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-variant">
+<div class="flex justify-between items-start mb-stack-sm">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-background">Yetkazilmoqda</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Bugun, 14:30 da kutilmoqda</p>
+</div>
+<div class="bg-[#16a34a]/10 text-[#16a34a] px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span>
+                    Jarayonda
+                </div>
+</div>
+<!-- Timeline -->
+<div class="mt-stack-lg pl-2">
+<!-- Step 1 -->
+<div class="timeline-item relative flex items-start gap-4 mb-stack-lg z-10">
+<div class="timeline-line relative flex-shrink-0">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center z-10 relative">
+<span class="material-symbols-outlined text-on-primary text-[18px]">check</span>
+</div>
+</div>
+<div class="pt-1">
+<h3 class="font-label-md text-label-md text-on-background">Yangi</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[13px]">12 Okt, 09:15</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="timeline-item relative flex items-start gap-4 mb-stack-lg z-10">
+<div class="timeline-line relative flex-shrink-0">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center z-10 relative">
+<span class="material-symbols-outlined text-on-primary text-[18px]">check</span>
+</div>
+</div>
+<div class="pt-1">
+<h3 class="font-label-md text-label-md text-on-background">Tasdiqlangan</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[13px]">12 Okt, 10:00</p>
+</div>
+</div>
+<!-- Step 3 (Active) -->
+<div class="timeline-item relative flex items-start gap-4 mb-stack-lg z-10">
+<div class="timeline-line relative flex-shrink-0">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center z-10 relative timeline-icon-active">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+</div>
+</div>
+<div class="pt-1">
+<h3 class="font-label-md text-label-md text-on-background font-bold">Yetkazilmoqda</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[13px]">Kuryer yo'lda (Aliyev T.)</p>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="timeline-item relative flex items-start gap-4 z-10">
+<div class="timeline-line relative flex-shrink-0">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center z-10 relative">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">home</span>
+</div>
+</div>
+<div class="pt-1">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Yakunlangan</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-[13px] opacity-0">-</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Delivery Snapshot Card -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-variant flex gap-4 items-center">
+<div class="w-16 h-16 rounded-lg bg-surface-variant flex-shrink-0 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A detailed map snapshot showing a specific delivery location in a modern urban construction area. The map uses a clean, light-mode aesthetic with precise street lines, a prominent red location pin marker, and soft ambient shadows. The overall mood is efficient and clear, integrating seamlessly into a professional delivery app interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAe1Vav1WkAGwpu9Ki8ssrBPKq3QNWdu66KVJs2onyz-kDYBTvSJUE-LBX_98T7jdVUEL0zJRxXN77F95ea9ieDvTHLCaW2K6s4_gFfUdr7SipEvH5kG8Sg6QDSddow73N4V3nCvGA9RmDUX8upcX6S7siwTOtFSIuVBb_GH5Kq2TS3C_jTW8le1PKiPrdFnb27Y4ybb_58F6GemLTi-71iI9N5R7L13wWa9kDsMuRgLBA0hl0cqRbh"/>
+</div>
+<div class="flex-1">
+<h3 class="font-label-md text-label-md text-on-surface-variant mb-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                    Yetkazib berish manzili
+                </h3>
+<p class="font-body-md text-body-md text-on-background font-medium">Yunusobod tumani, 4-mavze, 12-uy</p>
+</div>
+</section>
+<!-- Order Items List -->
+<section class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-variant overflow-hidden">
+<div class="px-stack-md py-3 border-b border-surface-variant bg-surface-bright">
+<h3 class="font-label-md text-label-md text-on-surface-variant">Mahsulotlar (3)</h3>
+</div>
+<div class="p-stack-md space-y-stack-md">
+<!-- Item 1 -->
+<div class="flex gap-4 items-start">
+<div class="w-16 h-16 rounded bg-surface-container flex-shrink-0 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A clean, studio-lit photo of a high-quality red clay brick stack. The bricks are perfectly aligned, showing their rough, tactile texture and rich terracotta color against a crisp, white background. The lighting is soft but directional, highlighting the robust, industrial nature of the building material suitable for a modern construction e-commerce catalog." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3Imbl3ijPbvL9tnwmElUmMpMWGDZ3eJ5NEV5MLW1WqHXo2Ma2ilgM3FYdbOXMOuX0zIQdRQbA7sHR6iVL0X4Nf6dfUlmaj3kKw7wD5cykKE7EPVPc1Ps0T7Yv-clRHUIVe1OyvZpBn7K_7qsCIC-vA7TuGkOU3Wt8_X1_UkNgqeC3ep8Xkw7ELsCI2hphZxdIqgt8hQmpQ5yOsrphJq61gDa5n6s3X7P2nbB3M9KntaKX7QwN3TUP"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-md text-body-md font-medium text-on-background truncate">Qizil g'isht (Oddiy)</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">1000 dona x 1,200 so'm</p>
+</div>
+<div class="text-right flex-shrink-0">
+<p class="font-label-md text-label-md text-primary font-bold">1,200,000</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex gap-4 items-start">
+<div class="w-16 h-16 rounded bg-surface-container flex-shrink-0 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional product shot of a 50kg bag of Portland cement. The bag features a clean, modern design with subtle branding, standing upright on a pure white background. The studio lighting emphasizes the heavy, substantial nature of the product, with soft ambient shadows grounding it, fitting for a premium industrial supplies platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYmplxOar7_EqlJdY8QAQNPXKAKYhZzayiZsa2cu5LzK_mNrTw1Q61_PQc-S66IiUIkR72vb6nAeEuEfEG-lScNWW0JoOn2GgWS3j8QhoQOqlfMmJOj6t6mhteZTeZpkAXXtwzR85rJ8RF78C0vR0bo23_wF5XSgXAwT8R5LaV2KtfBEmGTA_U_BEi6KG8bY0RZFzufDyGYIfgo3cZEzIESZV-zN2yaPMW_O99efbSUIOvA8M2Wg2f"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-md text-body-md font-medium text-on-background truncate">Sement M400</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">20 qop x 55,000 so'm</p>
+</div>
+<div class="text-right flex-shrink-0">
+<p class="font-label-md text-label-md text-primary font-bold">1,100,000</p>
+</div>
+</div>
+</div>
+<!-- Summary -->
+<div class="bg-surface-bright p-stack-md border-t border-surface-variant space-y-2">
+<div class="flex justify-between">
+<span class="font-body-md text-body-md text-on-surface-variant">Mahsulotlar narxi</span>
+<span class="font-body-md text-body-md text-on-background">2,300,000 so'm</span>
+</div>
+<div class="flex justify-between">
+<span class="font-body-md text-body-md text-on-surface-variant">Yetkazib berish</span>
+<span class="font-body-md text-body-md text-on-background">150,000 so'm</span>
+</div>
+<div class="flex justify-between pt-2 mt-2 border-t border-surface-variant border-dashed">
+<span class="font-headline-md text-headline-md text-on-background">Jami</span>
+<span class="font-headline-md text-headline-md text-primary font-bold">2,450,000 so'm</span>
+</div>
+</div>
+</section>
+<!-- Payment Info Card -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md shadow-[0px_4px_12px_rgba(31,41,55,0.05)] border border-surface-variant flex justify-between items-center">
+<div>
+<h3 class="font-label-md text-label-md text-on-surface-variant mb-1">To'lov usuli</h3>
+<p class="font-body-md text-body-md text-on-background font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">credit_card</span>
+                    Uzcard orqali to'langan
+                </p>
+</div>
+<div class="text-right">
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1">Sana</p>
+<p class="font-body-md text-body-md text-on-background font-medium">12.10.2023</p>
+</div>
+</section>
+</main>
+<!-- Suppressed Bottom Navigation for deep detail view -->
+</body></html>

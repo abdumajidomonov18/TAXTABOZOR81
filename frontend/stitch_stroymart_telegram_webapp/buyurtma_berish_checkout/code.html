@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html class="light" lang="uz"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Buyurtma berish - TAXTABOZOR81</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#1a1c1c",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#857462",
+                        "secondary-container": "#d6e0f3",
+                        "on-tertiary-fixed": "#121c28",
+                        "secondary": "#555f6f",
+                        "surface-variant": "#e2e2e2",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#dadada",
+                        "on-secondary-fixed": "#121c2a",
+                        "surface-container": "#eeeeee",
+                        "surface-bright": "#f9f9f9",
+                        "tertiary-fixed-dim": "#bdc7d8",
+                        "surface-container-high": "#e8e8e8",
+                        "on-primary-fixed": "#291800",
+                        "inverse-on-surface": "#f0f1f1",
+                        "background": "#f9f9f9",
+                        "on-surface": "#1a1c1c",
+                        "on-secondary-fixed-variant": "#3d4756",
+                        "primary-fixed-dim": "#ffb955",
+                        "on-primary-fixed-variant": "#633f00",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#d9e3f6",
+                        "inverse-surface": "#2f3131",
+                        "tertiary-container": "#adb7c7",
+                        "on-secondary-container": "#596373",
+                        "inverse-primary": "#ffb955",
+                        "primary-fixed": "#ffddb4",
+                        "secondary-fixed-dim": "#bdc7d9",
+                        "outline-variant": "#d7c3ae",
+                        "on-tertiary-fixed-variant": "#3e4755",
+                        "primary-container": "#f5a623",
+                        "error-container": "#ffdad6",
+                        "on-error-container": "#93000a",
+                        "primary": "#835500",
+                        "tertiary-fixed": "#d9e3f4",
+                        "on-primary-container": "#644000",
+                        "tertiary": "#555f6d",
+                        "surface-tint": "#835500",
+                        "surface-container-low": "#f3f3f3",
+                        "on-tertiary-container": "#3e4856",
+                        "on-surface-variant": "#524534",
+                        "on-secondary": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e2e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "8px",
+                        "stack-lg": "24px",
+                        "gutter-grid": "12px",
+                        "stack-md": "16px",
+                        "base": "4px",
+                        "margin-main": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .custom-radio:checked + div {
+            border-color: #f5a623;
+            background-color: #f3f3f3;
+        }
+        .custom-radio:checked + div .radio-inner {
+            background-color: #f5a623;
+            border-color: #f5a623;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-stack-lg">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 flex justify-between items-center px-margin-main h-14 w-full bg-background flat no shadows">
+<button aria-label="Back" class="flex items-center justify-center p-2 -ml-2 text-primary hover:opacity-80 scale-95 active:transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-lg font-bold text-on-background">Buyurtma berish</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="px-margin-main mt-stack-md flex flex-col gap-stack-lg max-w-2xl mx-auto">
+<!-- Step 1: Address Selection -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md shadow-[0px_4px_12px_rgba(31,41,55,0.05)]">
+<h2 class="font-headline-md text-headline-md text-on-background mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">location_on</span>
+                Yetkazib berish manzili
+            </h2>
+<div class="flex flex-col gap-stack-sm">
+<label class="relative cursor-pointer">
+<input checked="" class="custom-radio peer sr-only" name="address" type="radio"/>
+<div class="p-stack-md border border-surface-variant rounded-lg flex items-start gap-stack-md transition-colors">
+<div class="w-5 h-5 rounded-full border-2 border-outline flex-shrink-0 mt-0.5 flex items-center justify-center radio-inner">
+<div class="w-2.5 h-2.5 rounded-full bg-surface-container-lowest"></div>
+</div>
+<div class="flex-1">
+<p class="font-body-lg text-body-lg text-on-surface">Toshkent shahar, Yunusobod tumani, 19-kvartal, 42-uy</p>
+<p class="font-label-md text-label-md text-primary mt-0.5">Asosiy manzil</p>
+</div>
+</div>
+</label>
+<label class="relative cursor-pointer">
+<input class="custom-radio peer sr-only" name="address" type="radio"/>
+<div class="p-stack-md border border-surface-variant rounded-lg flex items-start gap-stack-md transition-colors">
+<div class="w-5 h-5 rounded-full border-2 border-outline flex-shrink-0 mt-0.5 flex items-center justify-center radio-inner">
+<div class="w-2.5 h-2.5 rounded-full bg-surface-container-lowest"></div>
+</div>
+<div class="flex-1">
+<p class="font-body-lg text-body-lg text-on-surface">Toshkent viloyati, Qibray tumani, Navoiy ko'chasi, 15-uy</p>
+<p class="font-label-md text-label-md text-primary mt-0.5">Obyekt</p>
+</div>
+</div>
+</label>
+<button class="flex items-center gap-2 p-stack-md border border-dashed border-outline rounded-lg text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors mt-2 justify-center">
+<span class="material-symbols-outlined text-lg">add</span>
+                    Yangi manzil qo'shish
+                </button>
+</div>
+</section>
+<!-- Step 2: Payment Method -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md shadow-[0px_4px_12px_rgba(31,41,55,0.05)]">
+<h2 class="font-headline-md text-headline-md text-on-background mb-stack-md flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">payments</span>
+                To'lov usuli
+            </h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-sm">
+<label class="relative cursor-pointer">
+<input checked="" class="custom-radio peer sr-only" name="payment" type="radio"/>
+<div class="p-stack-md border border-surface-variant rounded-lg flex flex-col items-center justify-center gap-2 transition-colors text-center h-full">
+<div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-800">
+  <span class="material-symbols-outlined text-2xl">payments</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Naqd pul</span>
+</div>
+</label>
+<label class="relative cursor-pointer">
+<input class="custom-radio peer sr-only" name="payment" type="radio"/>
+<div class="p-stack-md border border-surface-variant rounded-lg flex flex-col items-center justify-center gap-2 transition-colors text-center h-full">
+<div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 border border-surface-variant overflow-hidden">
+  <img src="../../assets/payme.png" alt="Payme" class="w-full h-full object-contain"/>
+</div>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Payme</span>
+</div>
+</label>
+<label class="relative cursor-pointer">
+<input class="custom-radio peer sr-only" name="payment" type="radio"/>
+<div class="p-stack-md border border-surface-variant rounded-lg flex flex-col items-center justify-center gap-2 transition-colors text-center h-full">
+<div class="w-10 h-10 rounded-xl bg-[#26272b] flex items-center justify-center p-1 border border-gray-700 overflow-hidden">
+  <img src="../../assets/click.png" alt="Click" class="w-full h-full object-contain"/>
+</div>
+<span class="font-body-md text-body-md text-on-surface font-semibold">Click</span>
+</div>
+</label>
+</div>
+</section>
+<!-- Step 3: Comment -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md shadow-[0px_4px_12px_rgba(31,41,55,0.05)]">
+<h2 class="font-headline-md text-headline-md text-on-background mb-stack-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">comment</span>
+                Izoh (ixtiyoriy)
+            </h2>
+<textarea class="w-full border border-surface-variant rounded-lg p-3 font-body-md text-body-md focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container bg-surface-container-lowest text-on-surface resize-none h-24 placeholder-secondary" placeholder="Kuryer uchun qo'shimcha ma'lumotlar..."></textarea>
+</section>
+<!-- Order Summary -->
+<section class="bg-surface-container-lowest rounded-xl p-stack-md shadow-[0px_4px_12px_rgba(31,41,55,0.05)]">
+<h2 class="font-headline-md text-headline-md text-on-background mb-stack-md">Buyurtma xulosasi</h2>
+<div class="flex flex-col gap-3 mb-stack-md">
+<div class="flex justify-between items-center font-body-md text-body-md text-on-surface">
+<span>Mahsulotlar (3):</span>
+<span class="font-semibold">4 500 000 so'm</span>
+</div>
+<div class="flex justify-between items-center font-body-md text-body-md text-on-surface">
+<span>Yetkazib berish:</span>
+<span class="font-semibold">150 000 so'm</span>
+</div>
+<div class="h-px bg-surface-variant w-full my-1"></div>
+<div class="flex justify-between items-center font-headline-md text-headline-md text-on-background">
+<span>Jami:</span>
+<span class="text-primary">4 650 000 so'm</span>
+</div>
+</div>
+<button class="w-full h-12 bg-primary-container text-on-background font-label-md text-label-md font-bold rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity">
+                Buyurtmani tasdiqlash
+            </button>
+</section>
+</main>
+</body></html>
