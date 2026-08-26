@@ -221,7 +221,7 @@
 
 
         <!-- Category Horizontal Chips -->
-        <section class="w-full overflow-x-auto no-scrollbar -mx-4 px-4">
+        <section id="category-scroll-container" class="w-full overflow-x-auto no-scrollbar -mx-4 px-4 cursor-grab select-none active:cursor-grabbing">
           <div id="category-chips" class="flex gap-2 pb-1 w-max">
             <!-- Chips rendered via JS -->
           </div>
@@ -236,12 +236,13 @@
             </button>
           </div>
           <!-- Smooth Horizontal Scroll without empty gap -->
-          <div class="w-full overflow-x-auto no-scrollbar -mx-4 px-4">
+          <div id="featured-scroll-container" class="w-full overflow-x-auto no-scrollbar -mx-4 px-4 cursor-grab select-none active:cursor-grabbing">
             <div id="featured-products-container" class="flex gap-3 pb-2 w-max pr-4">
               <!-- Featured products rendered via JS -->
             </div>
           </div>
         </section>
+
 
         <!-- All Products (Barcha mahsulotlar - 2-Column Grid) -->
         <section class="w-full">
@@ -1236,7 +1237,50 @@
             </div>
           </div>
         `).join('');
-      }
+    // Universal Horizontal Drag & Wheel Scroll Handler
+    function enableHorizontalDragScroll(elementId) {
+      const el = document.getElementById(elementId);
+      if (!el || el.dataset.dragEnabled) return;
+      el.dataset.dragEnabled = "true";
+
+      let isDown = false;
+      let startX = 0;
+      let scrollLeft = 0;
+      let hasDragged = false;
+
+      el.addEventListener('mousedown', (e) => {
+        isDown = true;
+        hasDragged = false;
+        el.classList.add('cursor-grabbing');
+        el.classList.remove('cursor-grab');
+        startX = e.pageX - el.offsetLeft;
+        scrollLeft = el.scrollLeft;
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDown) {
+          isDown = false;
+          el.classList.remove('cursor-grabbing');
+          el.classList.add('cursor-grab');
+        }
+      });
+
+      el.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - el.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        if (Math.abs(walk) > 4) hasDragged = true;
+        el.scrollLeft = scrollLeft - walk;
+      });
+
+      // Mouse Wheel to Horizontal Scroll
+      el.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          el.scrollLeft += e.deltaY * 0.8;
+        }
+      }, { passive: false });
     }
 
     // Render Home Categories
@@ -1250,24 +1294,31 @@
 
       container.innerHTML = cats.map(cat => {
         const isActive = state.selectedCategoryId === cat.id || (!state.selectedCategoryId && cat.id === 'all');
-        const iconPrefix = cat.icon ? `<span class="mr-1">${cat.icon}</span>` : '';
+        const iconPrefix = cat.icon ? `<span class="mr-1.5">${cat.icon}</span>` : '';
         return `
-          <button onclick="filterByCategory('${cat.id}')" class="px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap shadow-card transition-all btn-press ${
+          <button onclick="filterByCategory('${cat.id}', this)" class="category-chip-btn px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap shadow-card transition-all btn-press shrink-0 ${
             isActive 
-              ? 'bg-primary-container text-on-primary-container shadow-md' 
+              ? 'bg-primary-container text-on-primary-container shadow-md ring-2 ring-primary-container/30' 
               : 'bg-surface-container-lowest border border-outline-light text-on-surface hover:bg-gray-100'
           }">
             ${iconPrefix}${cat.name}
           </button>
         `;
       }).join('');
+
+      enableHorizontalDragScroll('category-scroll-container');
+      enableHorizontalDragScroll('featured-scroll-container');
     }
 
-    async function filterByCategory(catId) {
+    async function filterByCategory(catId, btnEl = null) {
       state.selectedCategoryId = catId;
       renderCategories();
+      if (btnEl) {
+        btnEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
       await fetchProducts();
     }
+
 
     let searchDebounceTimeout;
     function handleSearch(val) {
