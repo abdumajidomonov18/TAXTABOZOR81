@@ -1331,70 +1331,19 @@
       if (btnEl) {
         btnEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
       }
-
-      // 1. Instant local filter (0ms delay)
-      if (!catId || catId === 'all') {
-        state.products = [...PRODUCTS];
-      } else {
-        state.products = PRODUCTS.filter(p => 
-          p.categoryId == catId || 
-          p.category === catId || 
-          (p.category && p.category.toLowerCase().includes(String(catId).toLowerCase()))
-        );
-      }
-      renderProducts();
-
-      // 2. Sync with live backend
-      try {
-        const params = {};
-        if (catId && catId !== 'all') params.category = catId;
-        if (state.searchQuery) params.search = state.searchQuery;
-        const apiData = await window.API.getProducts(params);
-        if (Array.isArray(apiData) && apiData.length > 0) {
-          state.products = apiData.map((p, idx) => ({
-            id: p.id,
-            name: p.name,
-            category: p.category_name || "Qurilish",
-            categoryId: p.category,
-            price: parseFloat(p.price),
-            unit: (typeof p.unit === 'object' && p.unit?.short_name) ? p.unit.short_name : (p.unit || "dona"),
-            image: getProductImage(p),
-            inStock: p.is_active,
-            featured: idx < 6,
-            discount: null,
-            description: p.description || "Yuqori sifatli qurilish mahsuloti.",
-            weight: "Standart",
-            brand: "TAXTABOZOR81",
-            origin: "O'zbekiston"
-          }));
-          renderProducts();
-        }
-      } catch (e) {
-        console.warn("API filter fetch warning:", e);
-      }
+      await fetchProducts();
     }
 
     let searchDebounceTimeout;
     function handleSearch(val) {
       state.searchQuery = val.trim();
-      const q = state.searchQuery.toLowerCase();
-      let sourceList = PRODUCTS;
-      if (state.selectedCategoryId && state.selectedCategoryId !== 'all') {
-        sourceList = PRODUCTS.filter(p => p.categoryId == state.selectedCategoryId || p.category === state.selectedCategoryId);
-      }
-      if (!q) {
-        state.products = [...sourceList];
-      } else {
-        state.products = sourceList.filter(p => 
-          p.name.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q)
-        );
-      }
-      renderProducts();
+      clearTimeout(searchDebounceTimeout);
+      searchDebounceTimeout = setTimeout(() => {
+        fetchProducts();
+      }, 250);
     }
 
-    // Fetch Products from Backend API
+    // Fetch Products directly from Backend API
     async function fetchProducts() {
       try {
         const params = {};
@@ -1406,15 +1355,15 @@
         }
 
         const data = await window.API.getProducts(params);
-        if (Array.isArray(data) && data.length > 0) {
-          state.products = data.map((p, idx) => ({
+        if (Array.isArray(data)) {
+          const mappedProducts = data.map((p, idx) => ({
             id: p.id,
             name: p.name,
-            category: p.category_name || "Qurilish",
-            categoryId: p.category,
+            category: p.category_name || (typeof p.category === 'object' ? p.category?.name : "Qurilish"),
+            categoryId: (typeof p.category === 'object') ? p.category?.id : p.category,
             price: parseFloat(p.price),
             unit: (typeof p.unit === 'object' && p.unit?.short_name) ? p.unit.short_name : (p.unit || "dona"),
-            image: getProductImage(p),
+            image: (p.image && p.image.trim()) ? p.image : getProductImage(p),
             inStock: p.is_active,
             featured: idx < 6,
             discount: null,
@@ -1423,7 +1372,11 @@
             brand: "TAXTABOZOR81",
             origin: "O'zbekiston"
           }));
-          PRODUCTS = state.products;
+
+          state.products = mappedProducts;
+          if (!params.category && !params.search) {
+            PRODUCTS = mappedProducts;
+          }
         }
       } catch (err) {
         console.error("fetchProducts error:", err);
@@ -1431,6 +1384,7 @@
         renderProducts();
       }
     }
+
 
 
 
