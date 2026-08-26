@@ -92,3 +92,35 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.unit})"
+
+
+class Banner(models.Model):
+    """
+    Bosh sahifadagi aksiya va reklama bannerlari.
+    """
+    title = models.CharField(max_length=255, verbose_name="Sarlavha")
+    subtitle = models.CharField(max_length=255, blank=True, verbose_name="Kichik sarlavha / Izoh")
+    tag = models.CharField(max_length=50, default="Aksiya", verbose_name="Teg (masalan: Aksiya, Yangilik)")
+    image = models.ImageField(upload_to='banners/', blank=True, null=True, verbose_name="Banner rasmi")
+    image_url = models.URLField(max_length=500, blank=True, verbose_name="Rasm havolasi (tashqi URL)")
+    button_text = models.CharField(max_length=50, default="Xarid qilish", verbose_name="Tugma matni")
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='banners',
+        verbose_name="Bog'langan kategoriya"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Faolmi?")
+    order = models.PositiveIntegerField(default=0, verbose_name="Tartib raqami")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan sana")
+
+    class Meta:
+        ordering = ['order', '-created_at']
+        verbose_name = "Banner"
+        verbose_name_plural = "Bannerlar"
+
+    def __str__(self):
+        return self.title
+

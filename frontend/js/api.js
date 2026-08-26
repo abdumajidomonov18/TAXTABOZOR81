@@ -61,6 +61,11 @@ window.API = {
     return request('products/categories/');
   },
 
+  async getBanners() {
+    return request('products/banners/');
+  },
+
+
   async getProducts(params = {}) {
     const query = new URLSearchParams();
     if (params.category) query.append('category', params.category);

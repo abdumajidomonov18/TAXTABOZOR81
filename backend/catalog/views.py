@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Category, Product
-from .serializers import CategorySerializer, ProductSerializer
+from .models import Category, Product, Banner
+from .serializers import CategorySerializer, ProductSerializer, BannerSerializer
+
 
 
 class CategoryListView(APIView):
@@ -88,3 +89,14 @@ class ProductDetailView(APIView):
             return Response({'error': 'Mahsulot topilmadi'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(ProductSerializer(product).data)
+
+
+class BannerListView(APIView):
+    """
+    GET /api/products/banners/
+    Faol aksiya va reklama bannerlari ro'yxati.
+    """
+    def get(self, request):
+        banners = Banner.objects.filter(is_active=True).select_related('category')
+        return Response(BannerSerializer(banners, many=True).data)
+

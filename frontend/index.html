@@ -207,18 +207,21 @@
         </div>
 
         <!-- Promo Banner Carousel -->
-        <section class="w-full h-44 rounded-2xl overflow-hidden relative shadow-card group cursor-pointer" onclick="filterByCategory('Yog\'och')">
-          <div class="w-full h-full bg-cover bg-center absolute inset-0 transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&auto=format&fit=crop&q=80');"></div>
-          <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent flex flex-col justify-center p-5 text-white">
-            <span class="bg-primary-container/90 text-on-primary-container text-[11px] font-bold px-2 py-0.5 rounded-full w-max mb-1.5">Aksiya</span>
-            <h2 class="text-xl font-bold leading-tight mb-1">Yog'ochga 10% chegirma</h2>
-            <p class="text-xs text-gray-200 mb-3 font-normal">Faqat bugun buyurtma bering!</p>
-            <button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:bg-amber-400 btn-press w-max flex items-center gap-1">
-              <span>Xarid qilish</span>
-              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </button>
+        <section id="promo-banner-container" class="w-full cursor-pointer">
+          <div class="w-full h-44 rounded-2xl overflow-hidden relative shadow-card group">
+            <div id="banner-bg" class="w-full h-full bg-cover bg-center absolute inset-0 transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&auto=format&fit=crop&q=80');"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent flex flex-col justify-center p-5 text-white">
+              <span id="banner-tag" class="bg-primary-container/90 text-on-primary-container text-[11px] font-bold px-2 py-0.5 rounded-full w-max mb-1.5">Aksiya</span>
+              <h2 id="banner-title" class="text-xl font-bold leading-tight mb-1">Yog'ochga 10% chegirma</h2>
+              <p id="banner-subtitle" class="text-xs text-gray-200 mb-3 font-normal">Faqat bugun buyurtma bering!</p>
+              <button id="banner-btn" class="bg-primary-container text-on-primary-container px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:bg-amber-400 btn-press w-max flex items-center gap-1">
+                <span id="banner-btn-text">Xarid qilish</span>
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </button>
+            </div>
           </div>
         </section>
+
 
         <!-- Category Horizontal Chips -->
         <section class="w-full overflow-x-auto no-scrollbar -mx-4 px-4">
@@ -995,12 +998,12 @@
       } catch(e) {}
     }
 
-    // Mock Products Database with High-Quality Construction Assets
-    const PRODUCTS = [
+    // Fallback Mock Products (used only if offline or before API loads)
+    const INITIAL_MOCK_PRODUCTS = [
       {
         id: 1,
         name: "Premium Qizil G'isht (M150)",
-        category: "G'isht",
+        category: "G'isht va Bloklar",
         price: 1200,
         unit: "1 dona",
         image: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?w=500&auto=format&fit=crop&q=80",
@@ -1015,107 +1018,17 @@
       {
         id: 2,
         name: "Sement Portland M400",
-        category: "Sement",
+        category: "Sement va Qorishmalar",
         price: 45000,
         unit: "50 kg / qop",
         image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
         inStock: true,
         featured: true,
         discount: null,
-        description: "Yuqori sifatli M-400 markali Portland sementi. Poshdevor, devor qurilishi va umumiy beton ishlari uchun ideal. Qotish vaqti tez va mustahkamligi yuqori.",
+        description: "Yuqori sifatli M-400 markali Portland sementi. Poshdevor, devor qurilishi va umumiy beton ishlari uchun ideal.",
         weight: "50 kg",
         brand: "M-400",
         origin: "Qizilqumsement"
-      },
-      {
-        id: 3,
-        name: "Tozalangan Daryo Qumi",
-        category: "Qum",
-        price: 80000,
-        unit: "1 tonna",
-        image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&auto=format&fit=crop&q=80",
-        inStock: true,
-        featured: true,
-        discount: null,
-        description: "Suvda yuvilgan, loy va iflosliklardan tozalangan mayda donali daryo qumi. Suvoq va beton qorishmalari uchun a'lo darajadagi xomashyo.",
-        weight: "1000 kg",
-        brand: "Chirchiq Daryo",
-        origin: "Chirchiq kareri"
-      },
-      {
-        id: 4,
-        name: "Qarag'ay Yog'och (Taxta)",
-        category: "Yog'och",
-        price: 1890000,
-        unit: "1 kub",
-        image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=500&auto=format&fit=crop&q=80",
-        inStock: true,
-        featured: true,
-        discount: "-10%",
-        description: "1-navli Rossiya qarag'ay taxtasi. Tom qismi karkaslari, pol va umumiy qurilish maqsadlari uchun yaxshi quritilgan.",
-        weight: "550 kg/m³",
-        brand: "Rossiya Qarag'ay",
-        origin: "Rossiya (Sibir)"
-      },
-      {
-        id: 5,
-        name: "Armatura 12mm (A500C)",
-        category: "Metall",
-        price: 8500,
-        unit: "1 metr",
-        image: "https://images.unsplash.com/photo-1535813547-99c456a41d4a?w=500&auto=format&fit=crop&q=80",
-        inStock: true,
-        featured: true,
-        discount: null,
-        description: "Rossiya standartidagi mustahkam A500C armatura. Seysmik chidamli karkaslar va poydevor armaturalash uchun.",
-        weight: "0.888 kg/m",
-        brand: "A500C",
-        origin: "O'zmetkombinat"
-      },
-      {
-        id: 6,
-        name: "Perforator Bosch GBH 2-26",
-        category: "Asboblar",
-        price: 1450000,
-        unit: "1 dona",
-        image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=500&auto=format&fit=crop&q=80",
-        inStock: true,
-        featured: false,
-        discount: null,
-        description: "Professional 800W quvvatli perforator. Beton, tosh va g'ishtlarni tezkor burg'ulash uchun 3 xil ish rejimi.",
-        weight: "2.8 kg",
-        brand: "Bosch Professional",
-        origin: "Germaniya"
-      },
-      {
-        id: 7,
-        name: "Shlakoblok (20x20x40)",
-        category: "G'isht",
-        price: 3500,
-        unit: "1 dona",
-        image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=500&auto=format&fit=crop&q=80",
-        inStock: false,
-        featured: false,
-        discount: null,
-        description: "Pishiq presslangan devorbob shlakoblok. Obyekt atrofiga devor qurish va omborxonalar uchun eng tejamkor yechim.",
-        weight: "14 kg",
-        brand: "Standart Press",
-        origin: "Toshkent"
-      },
-      {
-        id: 8,
-        name: "Qum (Yuvilgan, Zangiota)",
-        category: "Qum",
-        price: 120000,
-        unit: "1 tonna",
-        image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=500&auto=format&fit=crop&q=80",
-        inStock: true,
-        featured: false,
-        discount: null,
-        description: "Yuqori sifatli yuvilgan Zangiota qumi. Maxsus quyma beton va suvoqlar uchun tavsiya etiladi.",
-        weight: "1000 kg",
-        brand: "Zangiota Lux",
-        origin: "Zangiota"
       }
     ];
 
@@ -1137,17 +1050,18 @@
 
     // Dynamic Categories & Products Array
     let CATEGORIES = [];
-    let PRODUCTS = [];
+    let PRODUCTS = [...INITIAL_MOCK_PRODUCTS];
 
     // App Global State
     let state = {
       currentScreen: 'home',
       screenHistory: ['home'],
+      banners: [],
       categories: [],
       selectedCategoryId: 'all',
       searchQuery: '',
-      products: [],
-      currentProductId: null,
+      products: [...INITIAL_MOCK_PRODUCTS],
+      currentProductId: 1,
       detailQuantity: 1,
       selectedAddressId: null,
       addresses: [],
@@ -1156,6 +1070,7 @@
       orders: [],
       isLoading: false
     };
+
 
     // Format number to currency string
     function formatPrice(num) {
@@ -2084,10 +1999,44 @@
       showToast("Filtr oynasi tez orada qo'shiladi", "tune");
     }
 
+    // Banner Rendering
+    function renderBanners() {
+      if (!state.banners || state.banners.length === 0) return;
+      const b = state.banners[0];
+      const bg = document.getElementById('banner-bg');
+      const tag = document.getElementById('banner-tag');
+      const title = document.getElementById('banner-title');
+      const subtitle = document.getElementById('banner-subtitle');
+      const btnText = document.getElementById('banner-btn-text');
+      const container = document.getElementById('promo-banner-container');
+
+      if (bg && b) {
+        bg.style.backgroundImage = `url('${b.image || b.image_url || "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&auto=format&fit=crop&q=80"}')`;
+        if (tag) tag.innerText = b.tag || "Aksiya";
+        if (title) title.innerText = b.title;
+        if (subtitle) subtitle.innerText = b.subtitle || "";
+        if (btnText) btnText.innerText = b.button_text || "Xarid qilish";
+        if (container && b.category) {
+          container.onclick = () => filterByCategory(b.category);
+        }
+      }
+    }
+
     // Asynchronous Initial Data Loader
     async function loadInitialData() {
       renderLoadingSkeletons();
       try {
+        // 0. Fetch Banners
+        try {
+          const bannerRes = await window.API.getBanners();
+          if (Array.isArray(bannerRes) && bannerRes.length > 0) {
+            state.banners = bannerRes;
+            renderBanners();
+          }
+        } catch (e) {
+          console.warn("Bannerlarni yuklashda xatolik:", e);
+        }
+
         // 1. Fetch Categories
         const catRes = await window.API.getCategories();
         if (Array.isArray(catRes)) {
@@ -2120,11 +2069,17 @@
       }
     }
 
-    // Initialization
-    window.addEventListener('DOMContentLoaded', () => {
+    // Initialization (handles both DOMContentLoaded & already loaded states)
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', () => {
+        loadInitialData();
+        updateBottomNav();
+      });
+    } else {
       loadInitialData();
       updateBottomNav();
-    });
+    }
+
 
   </script>
 </body>
