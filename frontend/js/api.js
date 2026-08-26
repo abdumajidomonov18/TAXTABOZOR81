@@ -70,7 +70,9 @@ window.API = {
 
   async getProducts(params = {}) {
     const query = new URLSearchParams();
-    if (params.category) query.append('category', params.category);
+    if (params.category && params.category !== 'all' && params.category !== 'null' && params.category !== 'undefined') {
+      query.append('category', params.category);
+    }
     if (params.search) query.append('search', params.search);
     if (params.min_price) query.append('min_price', params.min_price);
     if (params.max_price) query.append('max_price', params.max_price);
@@ -78,6 +80,7 @@ window.API = {
     const queryString = query.toString();
     return request(`products/${queryString ? `?${queryString}` : ''}`);
   },
+
 
   async getProductDetail(id) {
     return request(`products/${id}/`);

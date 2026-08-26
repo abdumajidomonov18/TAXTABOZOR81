@@ -30,10 +30,14 @@ class ProductListView(APIView):
     def get(self, request):
         queryset = Product.objects.filter(is_active=True).select_related('category', 'unit')
 
-        # Kategoriya filtri
-        category_id = request.query_params.get('category')
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)
+        # Kategoriya filtri (ID yoki nomi bo'yicha)
+        category_param = request.query_params.get('category')
+        if category_param and category_param not in ['all', 'null', 'undefined', '']:
+            if str(category_param).isdigit():
+                queryset = queryset.filter(category_id=int(category_param))
+            else:
+                queryset = queryset.filter(category__name__icontains=category_param)
+
 
         # Aqlli va tezkor qidirish
         search = request.query_params.get('search')

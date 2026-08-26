@@ -1313,14 +1313,14 @@
         }
 
         const data = await window.API.getProducts(params);
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           state.products = data.map((p, idx) => ({
             id: p.id,
             name: p.name,
             category: p.category_name || "Qurilish",
             categoryId: p.category,
             price: parseFloat(p.price),
-            unit: p.unit?.short_name || "dona",
+            unit: (typeof p.unit === 'object' && p.unit?.short_name) ? p.unit.short_name : (p.unit || "dona"),
             image: getProductImage(p),
             inStock: p.is_active,
             featured: idx < 6,
@@ -1338,6 +1338,7 @@
         renderProducts();
       }
     }
+
 
 
     // Render Products Grid & Featured Slider
