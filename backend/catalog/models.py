@@ -104,6 +104,11 @@ class Banner(models.Model):
     image = models.ImageField(upload_to='banners/', blank=True, null=True, verbose_name="Banner rasmi")
     image_url = models.URLField(max_length=500, blank=True, verbose_name="Rasm havolasi (tashqi URL)")
     button_text = models.CharField(max_length=50, default="Xarid qilish", verbose_name="Tugma matni")
+    link = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name="Havola / Link (masalan: https://t.me/... yoki screen:cart)"
+    )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -115,6 +120,7 @@ class Banner(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="Faolmi?")
     order = models.PositiveIntegerField(default=0, verbose_name="Tartib raqami")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yaratilgan sana")
+
 
     class Meta:
         ordering = ['order', '-created_at']

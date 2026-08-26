@@ -27,8 +27,9 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
-    list_display = ('title', 'tag', 'category', 'order', 'is_active', 'created_at')
+    list_display = ('title', 'tag', 'category', 'link', 'order', 'is_active', 'created_at')
     list_filter = ('is_active', 'category')
     list_editable = ('order', 'is_active')
-    search_fields = ('title', 'subtitle')
+    search_fields = ('title', 'subtitle', 'link')
+
 

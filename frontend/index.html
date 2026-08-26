@@ -2000,6 +2000,51 @@
     let bannerSlideTimer = null;
     let currentBannerIndex = 0;
 
+    function handleBannerClick(bannerId) {
+      const b = (state.banners || []).find(item => item.id === bannerId);
+      if (!b) return;
+
+      // 1. Agar maxsus havola (URL / Screen) berilgan bo'lsa
+      if (b.link && b.link.trim()) {
+        const link = b.link.trim();
+        // Tashqi veb yoki Telegram havola
+        if (link.startsWith('http://') || link.startsWith('https://') || link.startsWith('tg://')) {
+          if (window.Telegram?.WebApp?.openLink) {
+            window.Telegram.WebApp.openLink(link);
+          } else {
+            window.open(link, '_blank');
+          }
+          return;
+        }
+        // Ichki ekranlarga o'tish (masalan: screen:cart, screen:favorites, screen:orders)
+        if (link.startsWith('screen:')) {
+          const screen = link.replace('screen:', '').trim();
+          navigate(screen);
+          return;
+        }
+        // Bitta mahsulotga o'tish (masalan: product:5)
+        if (link.startsWith('product:')) {
+          const prodId = parseInt(link.replace('product:', '').trim());
+          if (!isNaN(prodId)) openProductDetail(prodId);
+          return;
+        }
+        if (!isNaN(parseInt(link))) {
+          openProductDetail(parseInt(link));
+          return;
+        }
+      }
+
+      // 2. Kategoriya bo'yicha filtrlash
+      if (b.category) {
+        filterByCategory(b.category);
+        return;
+      }
+      if (b.category_name) {
+        filterByCategory(b.category_name);
+        return;
+      }
+    }
+
     function renderBanners() {
       const slider = document.getElementById('promo-banner-slider');
       const dotsContainer = document.getElementById('banner-dots');
@@ -2021,9 +2066,8 @@
 
       slider.innerHTML = banners.map((b, idx) => {
         const bgImg = b.image || b.image_url || "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&auto=format&fit=crop&q=80";
-        const catAction = b.category ? `filterByCategory('${b.category}')` : (b.category_name ? `filterByCategory('${b.category_name}')` : '');
         return `
-          <div class="w-full min-w-full h-44 shrink-0 snap-center relative overflow-hidden cursor-pointer select-none" onclick="${catAction}">
+          <div class="w-full min-w-full h-44 shrink-0 snap-center relative overflow-hidden cursor-pointer select-none" onclick="handleBannerClick(${b.id})">
             <div class="w-full h-full bg-cover bg-center absolute inset-0 transition-transform duration-700 hover:scale-105" style="background-image: url('${bgImg}');"></div>
             <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent flex flex-col justify-center p-5 text-white">
               <span class="bg-primary-container/90 text-on-primary-container text-[11px] font-bold px-2 py-0.5 rounded-full w-max mb-1.5 shadow-sm">${b.tag || 'Aksiya'}</span>
@@ -2037,6 +2081,7 @@
           </div>
         `;
       }).join('');
+
 
       // Dots Rendering
       if (dotsContainer) {
