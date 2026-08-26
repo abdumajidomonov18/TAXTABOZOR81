@@ -1039,20 +1039,62 @@
     }
 
 
+    // Database Products Catalog (All 24 items from Backend SQLite DB)
+    const INITIAL_PRODUCTS_DATABASE = [
+      { id: 1, name: "Qarag'ay taxtasi (Rossiya) 50x150x6000", category: "Yog'och va Taxtalar", categoryId: 1, price: 3400000, unit: "m³", description: "1-navli Rossiya qarag'ay taxtasi. Qurilish, tomlar va pollar uchun a'lo sifatli.", inStock: true, featured: true },
+      { id: 2, name: "Qarag'ay taxtasi 25x100x6000", category: "Yog'och va Taxtalar", categoryId: 1, price: 3200000, unit: "m³", description: "Obreshyotka va yordamchi qurilish ishlari uchun quruq taxta.", inStock: true, featured: true },
+      { id: 3, name: "Qarag'ay Brusi 100x100x6000", category: "Yog'och va Taxtalar", categoryId: 1, price: 3500000, unit: "m³", description: "Mustahkam ustunlar va karkaslar uchun yuqori sifatli brus.", inStock: true, featured: true },
+      { id: 4, name: "Reyka 20x40x3000", category: "Yog'och va Taxtalar", categoryId: 1, price: 6000, unit: "metr", description: "Shift va devor montaj ishlari uchun silliqlangan reyka.", inStock: true, featured: false },
+      { id: 5, name: "Fanera (Finiy) 1525x1525x18mm", category: "Yog'och va Taxtalar", categoryId: 1, price: 185000, unit: "list", description: "Suvga chidamli va mustahkam fanera listi. Pol va mebellar uchun.", inStock: true, featured: false },
+      { id: 6, name: "Laminatsiyalangan Fanera (Opalubka uchun) 18mm", category: "Yog'och va Taxtalar", categoryId: 1, price: 320000, unit: "list", description: "Monolit quyish uchun maxsus silliq suvga chidamli fanera.", inStock: true, featured: false },
+      { id: 7, name: "Pishiq g'isht (Standart M-150)", category: "G'isht va Bloklar", categoryId: 2, price: 1200, unit: "dona", description: "Pishgan qizil g'isht, poydevor va asosiy devorlar uchun.", inStock: true, featured: true },
+      { id: 8, name: "Gazoblok 600x300x200 D500", category: "G'isht va Bloklar", categoryId: 2, price: 26000, unit: "dona", description: "Issiqlikni a'lo darajada saqlovchi va yengil gazobeton bloki.", inStock: true, featured: true },
+      { id: 9, name: "Shlakoblok 390x190x190", category: "G'isht va Bloklar", categoryId: 2, price: 4500, unit: "dona", description: "Devor va to'siqlar qurish uchun presslangan pishiq blok.", inStock: true, featured: false },
+      { id: 10, name: "Peno blok 600x300x100 (To'siq uchun)", category: "G'isht va Bloklar", categoryId: 2, price: 15000, unit: "dona", description: "Xonalararo to'siq devorlari uchun yengil penoblok.", inStock: true, featured: false },
+      { id: 11, name: "Qizilqum Sement M-400 (50 kg)", category: "Sement va Qorishmalar", categoryId: 3, price: 48000, unit: "qop", description: "Yuqori sifatli portlandsement. Barcha turdagi beton ishlari uchun.", inStock: true, featured: true },
+      { id: 12, name: "Olmaliq Sement M-500 (50 kg)", category: "Sement va Qorishmalar", categoryId: 3, price: 54000, unit: "qop", description: "Katta yuk ko'taruvchi monolit va poydevorlar uchun baquvvat sement.", inStock: true, featured: false },
+      { id: 13, name: "Rotband Gipsli Suvoq (30 kg)", category: "Sement va Qorishmalar", categoryId: 3, price: 42000, unit: "qop", description: "Ichki devorlarni tekislash uchun sifatli gips qorishmasi.", inStock: true, featured: false },
+      { id: 14, name: "Kafel Yelimi Ceresit CM-11 (25 kg)", category: "Sement va Qorishmalar", categoryId: 3, price: 38000, unit: "qop", description: "Kafel va granit plitalarini yopishtirish uchun mustahkam kley.", inStock: true, featured: false },
+      { id: 15, name: "Armatura A500C 12 mm (Bekobod)", category: "Metall va Armatura", categoryId: 4, price: 9800, unit: "metr", description: "Sifatli issiq prokatli po'lat armatura, 12 metrli.", inStock: true, featured: true },
+      { id: 16, name: "Armatura A500C 14 mm", category: "Metall va Armatura", categoryId: 4, price: 13500, unit: "metr", description: "Monolit poydevorlar uchun yuqori mustahkamlikdagi armatura.", inStock: true, featured: false },
+      { id: 17, name: "Profil quvur 40x40x2.0 mm", category: "Metall va Armatura", categoryId: 4, price: 24000, unit: "metr", description: "Darvoza, panjara va tom karkaslari uchun po'lat profil.", inStock: true, featured: false },
+      { id: 18, name: "Bog'lovchi Katanka Sim 1.2 mm", category: "Metall va Armatura", categoryId: 4, price: 12000, unit: "kg", description: "Armatura karkaslarini bog'lash uchun yumshoq sim.", inStock: true, featured: false },
+      { id: 19, name: "Profnastil 0.45 mm (Shokolad/Qizil)", category: "Tom Yopish Materiallari", categoryId: 5, price: 48000, unit: "metr", description: "Zanglamaydigan va uzoq xizmat qiluvchi polimer qoplamali profnastil.", inStock: true, featured: true },
+      { id: 20, name: "Klassik 8-to'lqinli Shifer", category: "Tom Yopish Materiallari", categoryId: 5, price: 45000, unit: "list", description: "Standart sifatli asbest shifer tomlar uchun.", inStock: true, featured: false },
+      { id: 21, name: "Bikrost / Ruberoid Gidroizolyatsiya", category: "Tom Yopish Materiallari", categoryId: 5, price: 140000, unit: "list", description: "Tom va poydevorlarni namlikdan himoya qiluvchi qoplama.", inStock: true, featured: false },
+      { id: 22, name: "Fasor Vodomulsiya (Oq, 20 kg)", category: "Bo'yoqlar va Laklar", categoryId: 6, price: 160000, unit: "banka", description: "Ichki va tashqi devorlar uchun yuviladigan matoviy bo'yoq.", inStock: true, featured: true },
+      { id: 23, name: "Yog'och Laki (Yaltiroq, 3 kg)", category: "Bo'yoqlar va Laklar", categoryId: 6, price: 75000, unit: "banka", description: "Taxta va yog'och mahsulotlarini quyosh va namdan asrovchi lak.", inStock: true, featured: false },
+      { id: 24, name: "Gruntovka Glubokogo Proniknoveniya (10 L)", category: "Bo'yoqlar va Laklar", categoryId: 6, price: 55000, unit: "banka", description: "Suvoq va bo'yoqdan oldin yuzani mustahkamlovchi astar.", inStock: true, featured: false }
+    ].map(p => ({
+      ...p,
+      image: getProductImage(p),
+      weight: "Standart",
+      brand: "TAXTABOZOR81",
+      origin: "O'zbekiston"
+    }));
+
     // Dynamic Categories & Products Array
-    let CATEGORIES = [];
-    let PRODUCTS = [];
+    let CATEGORIES = [
+      { id: 'all', name: 'Barchasi', icon: '✨' },
+      { id: 1, name: "Yog'och va Taxtalar", icon: '🪵' },
+      { id: 2, name: "G'isht va Bloklar", icon: '🧱' },
+      { id: 3, name: "Sement va Qorishmalar", icon: '🪨' },
+      { id: 4, name: "Metall va Armatura", icon: '⚙️' },
+      { id: 5, name: "Tom Yopish Materiallari", icon: '🏠' },
+      { id: 6, name: "Bo'yoqlar va Laklar", icon: '🎨' }
+    ];
+    let PRODUCTS = [...INITIAL_PRODUCTS_DATABASE];
 
     // App Global State
     let state = {
       currentScreen: 'home',
       screenHistory: ['home'],
       banners: [],
-      categories: [],
+      categories: [...CATEGORIES],
       selectedCategoryId: 'all',
       searchQuery: '',
-      products: [],
-      currentProductId: null,
+      products: [...INITIAL_PRODUCTS_DATABASE],
+      currentProductId: 1,
       detailQuantity: 1,
       selectedAddressId: null,
       addresses: [],
@@ -1061,6 +1103,7 @@
       orders: [],
       isLoading: false
     };
+
 
 
 
@@ -1288,17 +1331,67 @@
       if (btnEl) {
         btnEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
       }
-      await fetchProducts();
-    }
 
+      // 1. Instant local filter (0ms delay)
+      if (!catId || catId === 'all') {
+        state.products = [...PRODUCTS];
+      } else {
+        state.products = PRODUCTS.filter(p => 
+          p.categoryId == catId || 
+          p.category === catId || 
+          (p.category && p.category.toLowerCase().includes(String(catId).toLowerCase()))
+        );
+      }
+      renderProducts();
+
+      // 2. Sync with live backend
+      try {
+        const params = {};
+        if (catId && catId !== 'all') params.category = catId;
+        if (state.searchQuery) params.search = state.searchQuery;
+        const apiData = await window.API.getProducts(params);
+        if (Array.isArray(apiData) && apiData.length > 0) {
+          state.products = apiData.map((p, idx) => ({
+            id: p.id,
+            name: p.name,
+            category: p.category_name || "Qurilish",
+            categoryId: p.category,
+            price: parseFloat(p.price),
+            unit: (typeof p.unit === 'object' && p.unit?.short_name) ? p.unit.short_name : (p.unit || "dona"),
+            image: getProductImage(p),
+            inStock: p.is_active,
+            featured: idx < 6,
+            discount: null,
+            description: p.description || "Yuqori sifatli qurilish mahsuloti.",
+            weight: "Standart",
+            brand: "TAXTABOZOR81",
+            origin: "O'zbekiston"
+          }));
+          renderProducts();
+        }
+      } catch (e) {
+        console.warn("API filter fetch warning:", e);
+      }
+    }
 
     let searchDebounceTimeout;
     function handleSearch(val) {
       state.searchQuery = val.trim();
-      clearTimeout(searchDebounceTimeout);
-      searchDebounceTimeout = setTimeout(() => {
-        fetchProducts();
-      }, 300);
+      const q = state.searchQuery.toLowerCase();
+      let sourceList = PRODUCTS;
+      if (state.selectedCategoryId && state.selectedCategoryId !== 'all') {
+        sourceList = PRODUCTS.filter(p => p.categoryId == state.selectedCategoryId || p.category === state.selectedCategoryId);
+      }
+      if (!q) {
+        state.products = [...sourceList];
+      } else {
+        state.products = sourceList.filter(p => 
+          p.name.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q)
+        );
+      }
+      renderProducts();
     }
 
     // Fetch Products from Backend API
@@ -1313,7 +1406,7 @@
         }
 
         const data = await window.API.getProducts(params);
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           state.products = data.map((p, idx) => ({
             id: p.id,
             name: p.name,
@@ -1338,6 +1431,7 @@
         renderProducts();
       }
     }
+
 
 
 
@@ -2196,18 +2290,16 @@
 
     // Asynchronous Initial Data Loader
     async function loadInitialData() {
-      renderLoadingSkeletons();
-      
       // 0. Fetch Banners
       try {
         const bannerRes = await window.API.getBanners();
         if (Array.isArray(bannerRes) && bannerRes.length > 0) {
           state.banners = bannerRes;
+          renderBanners();
         }
       } catch (e) {
         console.warn("Bannerlarni yuklashda xatolik:", e);
       }
-      renderBanners();
 
       // 1. Fetch Categories
       try {
@@ -2217,11 +2309,11 @@
             { id: 'all', name: 'Barchasi', icon: '✨' },
             ...catRes.map(c => ({ id: c.id, name: c.name, icon: c.icon || '📦' }))
           ];
+          renderCategories();
         }
       } catch (e) {
         console.warn("Kategoriyalarni yuklashda xatolik:", e);
       }
-      renderCategories();
 
       // 2. Fetch Products
       await fetchProducts();
@@ -2241,17 +2333,21 @@
       }
     }
 
-
-    // Initialization (handles both DOMContentLoaded & already loaded states)
-    if (document.readyState === 'loading') {
-      window.addEventListener('DOMContentLoaded', () => {
-        loadInitialData();
-        updateBottomNav();
-      });
-    } else {
-      loadInitialData();
+    // Startup Initialization
+    function initApp() {
+      renderCategories();
+      renderBanners();
+      renderProducts();
       updateBottomNav();
+      loadInitialData();
     }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+
 
 
   </script>
