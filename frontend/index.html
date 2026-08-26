@@ -1033,17 +1033,43 @@
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     const currentTelegramId = tgUser?.id || 1831969115;
 
-    // Fallback Image Map for Categories
-    function getCategoryFallbackImage(categoryName = "") {
-      const cat = (categoryName || "").toLowerCase();
-      if (cat.includes("yog'och") || cat.includes("taxta")) return "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=500&auto=format&fit=crop&q=80";
-      if (cat.includes("g'isht") || cat.includes("blok")) return "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?w=500&auto=format&fit=crop&q=80";
-      if (cat.includes("sement") || cat.includes("qorishma")) return "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80";
-      if (cat.includes("metall") || cat.includes("armatura")) return "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80";
-      if (cat.includes("tom") || cat.includes("tunuka")) return "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&auto=format&fit=crop&q=80";
-      if (cat.includes("bo'yoq") || cat.includes("lak")) return "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=500&auto=format&fit=crop&q=80";
-      return "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&auto=format&fit=crop&q=80";
+    // Intelligent Product Photo Resolver with Authentic Construction Imagery
+    function getProductImage(product) {
+      if (product && product.image && product.image.trim()) {
+        return product.image;
+      }
+      const name = (product?.name || "").toLowerCase();
+      const cat = (product?.category || product?.category_name || "").toLowerCase();
+
+      // Yog'och va Taxtalar (Haqiqiy taxta, brus, reyka, fanera rasmlari)
+      if (name.includes("brusi") || name.includes("brus")) return "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?w=600&auto=format&fit=crop&q=80";
+      if (name.includes("reyka")) return "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=600&auto=format&fit=crop&q=80";
+      if (name.includes("laminatsiyalangan") || name.includes("opalubka")) return "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&auto=format&fit=crop&q=80";
+      if (name.includes("fanera")) return "https://images.unsplash.com/photo-1541123437800-1bb1317badc2?w=600&auto=format&fit=crop&q=80";
+      if (name.includes("taxta") || name.includes("qarag'ay") || cat.includes("yog'och")) return "https://images.unsplash.com/photo-1546484396-fb3fc6f95f98?w=600&auto=format&fit=crop&q=80";
+
+      // G'isht va Bloklar (Pishiq qizil g'isht, gazoblok, shlakoblok)
+      if (name.includes("gazoblok")) return "https://images.unsplash.com/photo-1584463699028-2d0628e4695b?w=600&auto=format&fit=crop&q=80";
+      if (name.includes("shlakoblok") || name.includes("peno") || name.includes("blok")) return "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?w=600&auto=format&fit=crop&q=80";
+      if (name.includes("g'isht") || cat.includes("g'isht")) return "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?w=600&auto=format&fit=crop&q=80";
+
+      // Sement va Qorishmalar (Qizilqum sement, Rotband, Ceresit)
+      if (name.includes("rotband") || name.includes("suvoq") || name.includes("yelim") || name.includes("ceresit")) return "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&auto=format&fit=crop&q=80";
+      if (name.includes("sement") || cat.includes("sement")) return "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80";
+
+      // Metall va Armatura (Bekobod armatura, profil truba, shveller)
+      if (name.includes("armatura") || cat.includes("metall")) return "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=600&auto=format&fit=crop&q=80";
+      if (name.includes("truba") || name.includes("shveller") || name.includes("profil")) return "https://images.unsplash.com/photo-1535813547-99c456a41d4a?w=600&auto=format&fit=crop&q=80";
+
+      // Tom Yopish Materiallari (Profnastil, cherepitsa)
+      if (name.includes("cherepitsa") || name.includes("profnastil") || name.includes("tunuka") || cat.includes("tom")) return "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format&fit=crop&q=80";
+
+      // Bo'yoqlar va Laklar (Akfa emulsiya, PF-115, Lak)
+      if (name.includes("bo'yoq") || name.includes("emal") || name.includes("emulsiya") || name.includes("lak") || cat.includes("bo'yoq")) return "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=600&auto=format&fit=crop&q=80";
+
+      return "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&auto=format&fit=crop&q=80";
     }
+
 
     // Dynamic Categories & Products Array
     let CATEGORIES = [];
@@ -1272,8 +1298,9 @@
             categoryId: p.category,
             price: parseFloat(p.price),
             unit: p.unit?.short_name || "dona",
-            image: p.image || getCategoryFallbackImage(p.category_name),
+            image: getProductImage(p),
             inStock: p.is_active,
+
             featured: idx < 6,
             discount: null,
             description: p.description || "Yuqori sifatli qurilish mahsuloti.",
