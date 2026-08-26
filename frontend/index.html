@@ -1290,7 +1290,7 @@
         }
 
         const data = await window.API.getProducts(params);
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           state.products = data.map((p, idx) => ({
             id: p.id,
             name: p.name,
@@ -1300,7 +1300,6 @@
             unit: p.unit?.short_name || "dona",
             image: getProductImage(p),
             inStock: p.is_active,
-
             featured: idx < 6,
             discount: null,
             description: p.description || "Yuqori sifatli qurilish mahsuloti.",
@@ -1310,11 +1309,13 @@
           }));
           PRODUCTS = state.products;
         }
-        renderProducts();
       } catch (err) {
         console.error("fetchProducts error:", err);
+      } finally {
+        renderProducts();
       }
     }
+
 
     // Render Products Grid & Featured Slider
     function renderProducts() {
@@ -2172,49 +2173,50 @@
     // Asynchronous Initial Data Loader
     async function loadInitialData() {
       renderLoadingSkeletons();
+      
+      // 0. Fetch Banners
       try {
-        // 0. Fetch Banners
-        try {
-          const bannerRes = await window.API.getBanners();
-          if (Array.isArray(bannerRes) && bannerRes.length > 0) {
-            state.banners = bannerRes;
-            renderBanners();
-          }
-        } catch (e) {
-          console.warn("Bannerlarni yuklashda xatolik:", e);
+        const bannerRes = await window.API.getBanners();
+        if (Array.isArray(bannerRes) && bannerRes.length > 0) {
+          state.banners = bannerRes;
         }
+      } catch (e) {
+        console.warn("Bannerlarni yuklashda xatolik:", e);
+      }
+      renderBanners();
 
-        // 1. Fetch Categories
+      // 1. Fetch Categories
+      try {
         const catRes = await window.API.getCategories();
-        if (Array.isArray(catRes)) {
+        if (Array.isArray(catRes) && catRes.length > 0) {
           state.categories = [
             { id: 'all', name: 'Barchasi', icon: '✨' },
             ...catRes.map(c => ({ id: c.id, name: c.name, icon: c.icon || '📦' }))
           ];
-          renderCategories();
         }
+      } catch (e) {
+        console.warn("Kategoriyalarni yuklashda xatolik:", e);
+      }
+      renderCategories();
 
-        // 2. Fetch Products
-        await fetchProducts();
+      // 2. Fetch Products
+      await fetchProducts();
 
-        // 3. Sync User Cart
-        try {
-          const cartRes = await window.API.getCart(currentTelegramId);
-          if (cartRes && cartRes.items) {
-            state.cart = cartRes.items.map(it => ({
-              productId: it.product,
-              quantity: it.quantity
-            }));
-            updateBottomNav();
-          }
-        } catch (e) {
-          console.warn("Savatni yuklashda xatolik:", e);
+      // 3. Sync User Cart
+      try {
+        const cartRes = await window.API.getCart(currentTelegramId);
+        if (cartRes && cartRes.items) {
+          state.cart = cartRes.items.map(it => ({
+            productId: it.product,
+            quantity: it.quantity
+          }));
+          updateBottomNav();
         }
-      } catch (err) {
-        console.error("Dastlabki yuklashda xatolik:", err);
-        showToast("Server bilan ulanishda xatolik yuz berdi", "error");
+      } catch (e) {
+        console.warn("Savatni yuklashda xatolik:", e);
       }
     }
+
 
     // Initialization (handles both DOMContentLoaded & already loaded states)
     if (document.readyState === 'loading') {
