@@ -4,11 +4,12 @@
  */
 
 const API_CONFIG = {
-  BASE_URL: (window.location.protocol.startsWith('http'))
-    ? `${window.location.protocol}//${window.location.hostname || '127.0.0.1'}:8000/api`
-    : 'http://127.0.0.1:8000/api',
+  BASE_URL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://127.0.0.1:8000/api'
+    : `${window.location.protocol}//${window.location.hostname}:8000/api`,
   TIMEOUT: 8000,
 };
+
 
 
 class ApiError extends Error {

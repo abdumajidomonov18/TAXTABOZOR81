@@ -996,43 +996,10 @@
       } catch(e) {}
     }
 
-    // Fallback Mock Products (used only if offline or before API loads)
-    const INITIAL_MOCK_PRODUCTS = [
-      {
-        id: 1,
-        name: "Premium Qizil G'isht (M150)",
-        category: "G'isht va Bloklar",
-        price: 1200,
-        unit: "1 dona",
-        image: "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?w=500&auto=format&fit=crop&q=80",
-        inStock: true,
-        featured: true,
-        discount: null,
-        description: "Pishgan sifatli qizil g'isht. Mustahkam poydevor va yuk ko'taruvchi devorlar uchun M-150 markali chidamli g'isht.",
-        weight: "3.2 kg",
-        brand: "M-150 Standart",
-        origin: "O'zbekiston (Toshkent zavodi)"
-      },
-      {
-        id: 2,
-        name: "Sement Portland M400",
-        category: "Sement va Qorishmalar",
-        price: 45000,
-        unit: "50 kg / qop",
-        image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80",
-        inStock: true,
-        featured: true,
-        discount: null,
-        description: "Yuqori sifatli M-400 markali Portland sementi. Poshdevor, devor qurilishi va umumiy beton ishlari uchun ideal.",
-        weight: "50 kg",
-        brand: "M-400",
-        origin: "Qizilqumsement"
-      }
-    ];
-
     // Telegram WebApp User Context
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     const currentTelegramId = tgUser?.id || 1831969115;
+
 
     // Intelligent Product Photo Resolver with Authentic Construction Imagery
     function getProductImage(product) {
@@ -1074,7 +1041,7 @@
 
     // Dynamic Categories & Products Array
     let CATEGORIES = [];
-    let PRODUCTS = [...INITIAL_MOCK_PRODUCTS];
+    let PRODUCTS = [];
 
     // App Global State
     let state = {
@@ -1084,8 +1051,8 @@
       categories: [],
       selectedCategoryId: 'all',
       searchQuery: '',
-      products: [...INITIAL_MOCK_PRODUCTS],
-      currentProductId: 1,
+      products: [],
+      currentProductId: null,
       detailQuantity: 1,
       selectedAddressId: null,
       addresses: [],
@@ -1094,6 +1061,7 @@
       orders: [],
       isLoading: false
     };
+
 
 
     // Format number to currency string
