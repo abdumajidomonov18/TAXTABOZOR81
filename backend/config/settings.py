@@ -103,10 +103,10 @@ REST_FRAMEWORK = {
 }
 
 # CORS — React WebApp va Telegram WebApp uchun
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # production'da False qilib, kerakli domenlarni qo'shish kerak
-CORS_ALLOWED_ORIGINS = [
-    "https://web.telegram.org",
-]
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = ['*']
+
 
 # Telegram Bot sozlamalari
 BOT_TOKEN = config('BOT_TOKEN', default='')

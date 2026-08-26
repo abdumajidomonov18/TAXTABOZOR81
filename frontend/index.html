@@ -23,6 +23,10 @@
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+  <!-- Backend API Client -->
+  <script src="js/api.js"></script>
+
+
   <!-- Tailwind Theme Configuration -->
   <script>
     tailwind.config = {
@@ -1115,90 +1119,55 @@
       }
     ];
 
-    // Categories List
-    const CATEGORIES = ["Barchasi", "G'isht", "Sement", "Yog'och", "Qum", "Asboblar"];
+    // Telegram WebApp User Context
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const currentTelegramId = tgUser?.id || 1831969115;
+
+    // Fallback Image Map for Categories
+    function getCategoryFallbackImage(categoryName = "") {
+      const cat = (categoryName || "").toLowerCase();
+      if (cat.includes("yog'och") || cat.includes("taxta")) return "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=500&auto=format&fit=crop&q=80";
+      if (cat.includes("g'isht") || cat.includes("blok")) return "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?w=500&auto=format&fit=crop&q=80";
+      if (cat.includes("sement") || cat.includes("qorishma")) return "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80";
+      if (cat.includes("metall") || cat.includes("armatura")) return "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80";
+      if (cat.includes("tom") || cat.includes("tunuka")) return "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&auto=format&fit=crop&q=80";
+      if (cat.includes("bo'yoq") || cat.includes("lak")) return "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=500&auto=format&fit=crop&q=80";
+      return "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&auto=format&fit=crop&q=80";
+    }
+
+    // Dynamic Categories & Products Array
+    let CATEGORIES = [];
+    let PRODUCTS = [];
 
     // App Global State
     let state = {
       currentScreen: 'home',
       screenHistory: ['home'],
-      selectedCategory: 'Barchasi',
+      categories: [],
+      selectedCategoryId: 'all',
       searchQuery: '',
-      currentProductId: 2,
+      products: [],
+      currentProductId: null,
       detailQuantity: 1,
-      selectedAddressId: 'addr_1',
-      addresses: [
-        {
-          id: 'addr_1',
-          name: "Asosiy manzil",
-          address: "Toshkent shahar, Yunusobod tumani, 19-kvartal, 42-uy",
-          phone: "+998 90 123 45 67",
-          recipient: "Alisher Rustamov",
-          lat: 41.3654,
-          lng: 69.2882
-        },
-        {
-          id: 'addr_2',
-          name: "Obyekt",
-          address: "Toshkent viloyati, Qibray tumani, Navoiy ko'chasi, 15-uy",
-          phone: "+998 93 987 65 43",
-          recipient: "Alisher Rustamov",
-          lat: 41.3852,
-          lng: 69.4521
-        }
-      ],
-      cart: [
-        { productId: 2, quantity: 2 },
-        { productId: 1, quantity: 1000 },
-        { productId: 5, quantity: 10 }
-      ],
-      favorites: [1, 2, 7, 8],
-      orders: [
-        {
-          id: "1042",
-          date: "12 Oktabr, 2023",
-          status: "new",
-          statusLabel: "Yangi",
-          statusBadgeClass: "bg-amber-100 text-amber-800",
-          statusIcon: "pending",
-          totalSum: "4,500,000 UZS",
-          itemsCount: "3 xil mahsulot",
-          canRepeat: false
-        },
-        {
-          id: "1038",
-          date: "10 Oktabr, 2023",
-          status: "shipping",
-          statusLabel: "Yetkazilmoqda",
-          statusBadgeClass: "bg-blue-100 text-blue-800",
-          statusIcon: "local_shipping",
-          totalSum: "12,800,000 UZS",
-          itemsCount: "12 xil mahsulot",
-          canRepeat: false
-        },
-        {
-          id: "0985",
-          date: "25 Sentyabr, 2023",
-          status: "completed",
-          statusLabel: "Yakunlangan",
-          statusBadgeClass: "bg-emerald-100 text-emerald-800",
-          statusIcon: "check_circle",
-          totalSum: "1,250,000 UZS",
-          itemsCount: "1 xil mahsulot",
-          canRepeat: true
-        }
-      ]
+      selectedAddressId: null,
+      addresses: [],
+      cart: [],
+      favorites: [1, 2],
+      orders: [],
+      isLoading: false
     };
 
     // Format number to currency string
     function formatPrice(num) {
-      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm";
+      if (num === null || num === undefined || isNaN(num)) return "0 so'm";
+      return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm";
     }
 
     // Toast Utility
     let toastTimeout;
     function showToast(msg, icon = 'check_circle') {
       const banner = document.getElementById('toast-banner');
+      if (!banner) return;
       document.getElementById('toast-message').innerText = msg;
       document.getElementById('toast-icon').innerText = icon;
       banner.classList.remove('hidden');
@@ -1208,7 +1177,8 @@
       }, 3200);
     }
     function hideToast() {
-      document.getElementById('toast-banner').classList.add('hidden');
+      const banner = document.getElementById('toast-banner');
+      if (banner) banner.classList.add('hidden');
     }
 
     // Navigation Router
@@ -1258,6 +1228,7 @@
 
     function updateBottomNav() {
       const nav = document.getElementById('bottom-nav-bar');
+      if (!nav) return;
       // Hide bottom nav on detail, checkout, add-address, and saved-addresses screens
       if (['product-detail', 'checkout', 'add-address', 'order-detail', 'saved-addresses'].includes(state.currentScreen)) {
         nav.classList.add('hidden');
@@ -1287,87 +1258,152 @@
       // Update cart badge
       const totalCartQty = state.cart.reduce((acc, item) => acc + item.quantity, 0);
       const badge = document.getElementById('nav-cart-badge');
-      if (totalCartQty > 0) {
-        badge.innerText = state.cart.length;
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
+      if (badge) {
+        if (totalCartQty > 0) {
+          badge.innerText = state.cart.length;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+
+    // Render Loading Skeletons
+    function renderLoadingSkeletons() {
+      const featContainer = document.getElementById('featured-products-container');
+      const grid = document.getElementById('all-products-grid');
+      
+      if (featContainer) {
+        featContainer.innerHTML = [1, 2, 3].map(() => `
+          <div class="w-[155px] min-w-[155px] bg-surface-container-lowest rounded-2xl p-2.5 flex flex-col border border-outline-light animate-pulse shrink-0">
+            <div class="w-full h-[110px] bg-gray-200 rounded-xl mb-2"></div>
+            <div class="w-16 h-3 bg-gray-200 rounded mb-1.5"></div>
+            <div class="w-full h-4 bg-gray-200 rounded mb-2"></div>
+            <div class="mt-auto flex justify-between items-center">
+              <div class="w-16 h-4 bg-gray-200 rounded"></div>
+              <div class="w-7 h-7 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      if (grid) {
+        grid.innerHTML = [1, 2, 3, 4].map(() => `
+          <div class="bg-surface-container-lowest rounded-2xl p-2.5 flex flex-col border border-outline-light animate-pulse">
+            <div class="w-full aspect-square bg-gray-200 rounded-xl mb-2"></div>
+            <div class="w-full h-4 bg-gray-200 rounded mb-2"></div>
+            <div class="mt-auto flex justify-between items-center">
+              <div class="w-16 h-4 bg-gray-200 rounded"></div>
+              <div class="w-7 h-7 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+        `).join('');
       }
     }
 
     // Render Home Categories
     function renderCategories() {
       const container = document.getElementById('category-chips');
-      container.innerHTML = CATEGORIES.map(cat => {
-        const isActive = state.selectedCategory === cat;
+      if (!container) return;
+
+      const cats = state.categories && state.categories.length > 0
+        ? state.categories
+        : [{ id: 'all', name: 'Barchasi', icon: '✨' }];
+
+      container.innerHTML = cats.map(cat => {
+        const isActive = state.selectedCategoryId === cat.id || (!state.selectedCategoryId && cat.id === 'all');
+        const iconPrefix = cat.icon ? `<span class="mr-1">${cat.icon}</span>` : '';
         return `
-          <button onclick="filterByCategory('${cat}')" class="px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap shadow-card transition-all btn-press ${
+          <button onclick="filterByCategory('${cat.id}')" class="px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap shadow-card transition-all btn-press ${
             isActive 
               ? 'bg-primary-container text-on-primary-container shadow-md' 
               : 'bg-surface-container-lowest border border-outline-light text-on-surface hover:bg-gray-100'
           }">
-            ${cat}
+            ${iconPrefix}${cat.name}
           </button>
         `;
       }).join('');
     }
 
-    function filterByCategory(cat) {
-      state.selectedCategory = cat;
+    async function filterByCategory(catId) {
+      state.selectedCategoryId = catId;
       renderCategories();
-      renderProducts();
+      await fetchProducts();
     }
 
+    let searchDebounceTimeout;
     function handleSearch(val) {
-      state.searchQuery = val.trim().toLowerCase();
-      renderProducts();
+      state.searchQuery = val.trim();
+      clearTimeout(searchDebounceTimeout);
+      searchDebounceTimeout = setTimeout(() => {
+        fetchProducts();
+      }, 300);
+    }
+
+    // Fetch Products from Backend API
+    async function fetchProducts() {
+      try {
+        const params = {};
+        if (state.selectedCategoryId && state.selectedCategoryId !== 'all') {
+          params.category = state.selectedCategoryId;
+        }
+        if (state.searchQuery) {
+          params.search = state.searchQuery;
+        }
+
+        const data = await window.API.getProducts(params);
+        if (Array.isArray(data)) {
+          state.products = data.map((p, idx) => ({
+            id: p.id,
+            name: p.name,
+            category: p.category_name || "Qurilish",
+            categoryId: p.category,
+            price: parseFloat(p.price),
+            unit: p.unit?.short_name || "dona",
+            image: p.image || getCategoryFallbackImage(p.category_name),
+            inStock: p.is_active,
+            featured: idx < 6,
+            discount: null,
+            description: p.description || "Yuqori sifatli qurilish mahsuloti.",
+            weight: "Standart",
+            brand: "TAXTABOZOR81",
+            origin: "O'zbekiston"
+          }));
+          PRODUCTS = state.products;
+        }
+        renderProducts();
+      } catch (err) {
+        console.error("fetchProducts error:", err);
+      }
     }
 
     // Render Products Grid & Featured Slider
     function renderProducts() {
-      const filtered = PRODUCTS.filter(p => {
-        const matchesCat = (state.selectedCategory === 'Barchasi' || state.selectedCategory === 'all') ? true : p.category.toLowerCase().includes(state.selectedCategory.toLowerCase());
-        const matchesQuery = state.searchQuery ? p.name.toLowerCase().includes(state.searchQuery) || p.description.toLowerCase().includes(state.searchQuery) : true;
-        return matchesCat && matchesQuery;
-      });
+      const filtered = state.products || [];
 
-      document.getElementById('product-count-badge').innerText = `${filtered.length} ta mahsulot`;
+      const badge = document.getElementById('product-count-badge');
+      if (badge) badge.innerText = `${filtered.length} ta mahsulot`;
 
       // Render Featured (Tavsiya etiladi - smooth horizontal slider)
-      const featuredProducts = PRODUCTS.filter(p => p.featured);
+      const featuredProducts = filtered.filter(p => p.featured);
       const featContainer = document.getElementById('featured-products-container');
-      featContainer.innerHTML = featuredProducts.map(p => {
-        const isFav = state.favorites.includes(p.id);
-        return `
-          <div class="w-[155px] min-w-[155px] bg-surface-container-lowest rounded-2xl shadow-card p-2.5 flex flex-col relative border border-outline-light group shrink-0">
-            <button onclick="toggleFavorite(${p.id}, event)" class="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-secondary hover:text-red-500 shadow-sm transition-all btn-press">
-              <span class="material-symbols-outlined text-[17px] ${isFav ? 'text-red-500 icon-fill' : ''}">favorite</span>
-            </button>
-            <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
-              <img class="w-full h-[110px] object-cover rounded-xl mb-2" src="${p.image}" alt="${p.name}"/>
-              <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold w-max mb-1 inline-block">Omborda bor</span>
-              <h4 class="text-xs font-bold text-on-background line-clamp-2 min-h-[32px]">${p.name}</h4>
-            </div>
-            <div class="mt-auto pt-2 flex justify-between items-end">
-              <div>
-                <span class="text-[10px] text-gray-500 block">${p.unit}</span>
-                <span class="text-xs font-extrabold text-primary-container">${formatPrice(p.price)}</span>
-              </div>
-              <button onclick="addToCartQuick(${p.id}, event)" class="w-7 h-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-md hover:bg-amber-400 btn-press">
-                <span class="material-symbols-outlined text-[16px]">add</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
+      if (featContainer) {
+        if (featuredProducts.length === 0 && filtered.length > 0) {
+          featContainer.innerHTML = filtered.slice(0, 4).map(p => renderFeaturedCard(p)).join('');
+        } else {
+          featContainer.innerHTML = featuredProducts.map(p => renderFeaturedCard(p)).join('');
+        }
+      }
 
       // Render All Products Grid
       const grid = document.getElementById('all-products-grid');
+      if (!grid) return;
+
       if (filtered.length === 0) {
         grid.innerHTML = `
           <div class="col-span-2 py-10 text-center text-gray-500 text-xs flex flex-col items-center gap-2">
             <span class="material-symbols-outlined text-3xl text-gray-400">search_off</span>
-            <span>Ushbu qidiruv bo'yicha mahsulot topilmadi</span>
+            <span>Ushbu parametrlar bo'yicha mahsulot topilmadi</span>
           </div>
         `;
         return;
@@ -1383,7 +1419,7 @@
             ${p.discount ? `<span class="bg-amber-500 text-white font-bold px-2 py-0.5 rounded-full text-[10px] absolute top-3 left-3 z-10 shadow-sm">${p.discount}</span>` : ''}
             
             <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
-              <img class="w-full aspect-square object-cover rounded-xl mb-2" src="${p.image}" alt="${p.name}"/>
+              <img class="w-full aspect-square object-cover rounded-xl mb-2 bg-gray-100" src="${p.image}" alt="${p.name}" loading="lazy"/>
               <h4 class="text-xs font-bold text-on-background line-clamp-2 min-h-[32px]">${p.name}</h4>
             </div>
 
@@ -1400,6 +1436,58 @@
         `;
       }).join('');
     }
+
+    function renderFeaturedCard(p) {
+      const isFav = state.favorites.includes(p.id);
+      return `
+        <div class="w-[155px] min-w-[155px] bg-surface-container-lowest rounded-2xl shadow-card p-2.5 flex flex-col relative border border-outline-light group shrink-0">
+          <button onclick="toggleFavorite(${p.id}, event)" class="absolute top-3 right-3 z-10 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-secondary hover:text-red-500 shadow-sm transition-all btn-press">
+            <span class="material-symbols-outlined text-[17px] ${isFav ? 'text-red-500 icon-fill' : ''}">favorite</span>
+          </button>
+          <div onclick="openProductDetail(${p.id})" class="cursor-pointer">
+            <img class="w-full h-[110px] object-cover rounded-xl mb-2 bg-gray-100" src="${p.image}" alt="${p.name}" loading="lazy"/>
+            <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold w-max mb-1 inline-block">Omborda bor</span>
+            <h4 class="text-xs font-bold text-on-background line-clamp-2 min-h-[32px]">${p.name}</h4>
+          </div>
+          <div class="mt-auto pt-2 flex justify-between items-end">
+            <div>
+              <span class="text-[10px] text-gray-500 block">${p.unit}</span>
+              <span class="text-xs font-extrabold text-primary-container">${formatPrice(p.price)}</span>
+            </div>
+            <button onclick="addToCartQuick(${p.id}, event)" class="w-7 h-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-md hover:bg-amber-400 btn-press">
+              <span class="material-symbols-outlined text-[16px]">add</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Quick Add to Cart with Backend Sync
+    async function addToCartQuick(id, e) {
+      if (e) e.stopPropagation();
+      try {
+        await window.API.addToCart(currentTelegramId, id, 1);
+        
+        // Update local cart state
+        const existing = state.cart.find(c => c.productId === id);
+        if (existing) {
+          existing.quantity += 1;
+        } else {
+          state.cart.push({ productId: id, quantity: 1 });
+        }
+        
+        const prod = (state.products || []).find(p => p.id === id);
+        showToast(`"${prod ? prod.name : 'Mahsulot'}" savatga qo'shildi!`, 'shopping_cart');
+        updateBottomNav();
+
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+          window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+        }
+      } catch (err) {
+        showToast("Savatga qo'shishda xatolik yuz berdi", "error");
+      }
+    }
+
 
     // Toggle Favorites
     function toggleFavorite(id, e) {
@@ -1996,12 +2084,48 @@
       showToast("Filtr oynasi tez orada qo'shiladi", "tune");
     }
 
+    // Asynchronous Initial Data Loader
+    async function loadInitialData() {
+      renderLoadingSkeletons();
+      try {
+        // 1. Fetch Categories
+        const catRes = await window.API.getCategories();
+        if (Array.isArray(catRes)) {
+          state.categories = [
+            { id: 'all', name: 'Barchasi', icon: '✨' },
+            ...catRes.map(c => ({ id: c.id, name: c.name, icon: c.icon || '📦' }))
+          ];
+          renderCategories();
+        }
+
+        // 2. Fetch Products
+        await fetchProducts();
+
+        // 3. Sync User Cart
+        try {
+          const cartRes = await window.API.getCart(currentTelegramId);
+          if (cartRes && cartRes.items) {
+            state.cart = cartRes.items.map(it => ({
+              productId: it.product,
+              quantity: it.quantity
+            }));
+            updateBottomNav();
+          }
+        } catch (e) {
+          console.warn("Savatni yuklashda xatolik:", e);
+        }
+      } catch (err) {
+        console.error("Dastlabki yuklashda xatolik:", err);
+        showToast("Server bilan ulanishda xatolik yuz berdi", "error");
+      }
+    }
+
     // Initialization
     window.addEventListener('DOMContentLoaded', () => {
-      renderCategories();
-      renderProducts();
+      loadInitialData();
       updateBottomNav();
     });
+
   </script>
 </body>
 </html>
