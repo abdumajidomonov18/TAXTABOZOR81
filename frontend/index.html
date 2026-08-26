@@ -206,21 +206,18 @@
           </div>
         </div>
 
-        <!-- Promo Banner Carousel -->
-        <section id="promo-banner-container" class="w-full cursor-pointer">
-          <div class="w-full h-44 rounded-2xl overflow-hidden relative shadow-card group">
-            <div id="banner-bg" class="w-full h-full bg-cover bg-center absolute inset-0 transition-transform duration-700 group-hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&auto=format&fit=crop&q=80');"></div>
-            <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent flex flex-col justify-center p-5 text-white">
-              <span id="banner-tag" class="bg-primary-container/90 text-on-primary-container text-[11px] font-bold px-2 py-0.5 rounded-full w-max mb-1.5">Aksiya</span>
-              <h2 id="banner-title" class="text-xl font-bold leading-tight mb-1">Yog'ochga 10% chegirma</h2>
-              <p id="banner-subtitle" class="text-xs text-gray-200 mb-3 font-normal">Faqat bugun buyurtma bering!</p>
-              <button id="banner-btn" class="bg-primary-container text-on-primary-container px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:bg-amber-400 btn-press w-max flex items-center gap-1">
-                <span id="banner-btn-text">Xarid qilish</span>
-                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-              </button>
-            </div>
+        <!-- Promo Banner Carousel (Auto-slide & Touch Swipe) -->
+        <section class="w-full relative group">
+          <div id="promo-banner-slider" class="w-full flex overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory rounded-2xl shadow-card" style="scroll-behavior: smooth;">
+            <!-- Dynamic Banner Slides rendered via JS -->
+          </div>
+
+          <!-- Pagination Indicator Dots -->
+          <div id="banner-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 bg-black/35 backdrop-blur-md px-2.5 py-1 rounded-full pointer-events-auto">
+            <!-- Dots rendered via JS -->
           </div>
         </section>
+
 
 
         <!-- Category Horizontal Chips -->
@@ -1999,28 +1996,106 @@
       showToast("Filtr oynasi tez orada qo'shiladi", "tune");
     }
 
-    // Banner Rendering
-    function renderBanners() {
-      if (!state.banners || state.banners.length === 0) return;
-      const b = state.banners[0];
-      const bg = document.getElementById('banner-bg');
-      const tag = document.getElementById('banner-tag');
-      const title = document.getElementById('banner-title');
-      const subtitle = document.getElementById('banner-subtitle');
-      const btnText = document.getElementById('banner-btn-text');
-      const container = document.getElementById('promo-banner-container');
+    // Banner Carousel Sliding Logic
+    let bannerSlideTimer = null;
+    let currentBannerIndex = 0;
 
-      if (bg && b) {
-        bg.style.backgroundImage = `url('${b.image || b.image_url || "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&auto=format&fit=crop&q=80"}')`;
-        if (tag) tag.innerText = b.tag || "Aksiya";
-        if (title) title.innerText = b.title;
-        if (subtitle) subtitle.innerText = b.subtitle || "";
-        if (btnText) btnText.innerText = b.button_text || "Xarid qilish";
-        if (container && b.category) {
-          container.onclick = () => filterByCategory(b.category);
+    function renderBanners() {
+      const slider = document.getElementById('promo-banner-slider');
+      const dotsContainer = document.getElementById('banner-dots');
+      if (!slider) return;
+
+      const banners = state.banners && state.banners.length > 0
+        ? state.banners
+        : [
+            {
+              id: 1,
+              title: "Yog'ochga 10% chegirma",
+              subtitle: "Faqat bugun buyurtma bering!",
+              tag: "Aksiya",
+              button_text: "Xarid qilish",
+              image_url: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&auto=format&fit=crop&q=80",
+              category_name: "Yog'och va Taxtalar"
+            }
+          ];
+
+      slider.innerHTML = banners.map((b, idx) => {
+        const bgImg = b.image || b.image_url || "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?w=800&auto=format&fit=crop&q=80";
+        const catAction = b.category ? `filterByCategory('${b.category}')` : (b.category_name ? `filterByCategory('${b.category_name}')` : '');
+        return `
+          <div class="w-full min-w-full h-44 shrink-0 snap-center relative overflow-hidden cursor-pointer select-none" onclick="${catAction}">
+            <div class="w-full h-full bg-cover bg-center absolute inset-0 transition-transform duration-700 hover:scale-105" style="background-image: url('${bgImg}');"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent flex flex-col justify-center p-5 text-white">
+              <span class="bg-primary-container/90 text-on-primary-container text-[11px] font-bold px-2 py-0.5 rounded-full w-max mb-1.5 shadow-sm">${b.tag || 'Aksiya'}</span>
+              <h2 class="text-xl font-bold leading-tight mb-1 drop-shadow-sm">${b.title}</h2>
+              <p class="text-xs text-gray-200 mb-3 font-normal line-clamp-1">${b.subtitle || ''}</p>
+              <button class="bg-primary-container text-on-primary-container px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:bg-amber-400 btn-press w-max flex items-center gap-1">
+                <span>${b.button_text || 'Xarid qilish'}</span>
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Dots Rendering
+      if (dotsContainer) {
+        if (banners.length <= 1) {
+          dotsContainer.classList.add('hidden');
+        } else {
+          dotsContainer.classList.remove('hidden');
+          dotsContainer.innerHTML = banners.map((_, idx) => `
+            <button onclick="goToBannerSlide(${idx})" class="h-2 rounded-full transition-all duration-300 ${idx === 0 ? 'bg-primary-container w-5' : 'bg-white/60 hover:bg-white w-2'}"></button>
+          `).join('');
         }
       }
+
+      // Slider touch / manual scroll listener to sync dots
+      slider.onscroll = () => {
+        const slideWidth = slider.clientWidth || 1;
+        const newIndex = Math.round(slider.scrollLeft / slideWidth);
+        if (newIndex !== currentBannerIndex && newIndex < banners.length) {
+          currentBannerIndex = newIndex;
+          updateBannerDots(currentBannerIndex);
+        }
+      };
+
+      // Start Auto-sliding Timer (every 3.8s)
+      startBannerAutoSlide(banners.length);
     }
+
+    function startBannerAutoSlide(count) {
+      if (count <= 1) return;
+      clearInterval(bannerSlideTimer);
+      bannerSlideTimer = setInterval(() => {
+        currentBannerIndex = (currentBannerIndex + 1) % count;
+        goToBannerSlide(currentBannerIndex);
+      }, 3800);
+    }
+
+    function goToBannerSlide(idx) {
+      const slider = document.getElementById('promo-banner-slider');
+      if (!slider) return;
+
+      currentBannerIndex = idx;
+      const slideWidth = slider.clientWidth;
+      slider.scrollTo({ left: slideWidth * idx, behavior: 'smooth' });
+      updateBannerDots(idx);
+    }
+
+    function updateBannerDots(idx) {
+      const dotsContainer = document.getElementById('banner-dots');
+      if (!dotsContainer) return;
+      const dots = dotsContainer.querySelectorAll('button');
+      dots.forEach((dot, dIdx) => {
+        if (dIdx === idx) {
+          dot.className = "w-5 h-2 rounded-full bg-primary-container transition-all duration-300";
+        } else {
+          dot.className = "w-2 h-2 rounded-full bg-white/60 hover:bg-white transition-all duration-300";
+        }
+      });
+    }
+
 
     // Asynchronous Initial Data Loader
     async function loadInitialData() {
